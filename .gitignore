@@ -211,3 +211,9 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 *.nes
+
+# No roms in the repo
+roms/
+
+#clangd cache
+.cache/
