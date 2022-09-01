@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "core6502.h"
 
 #include "log.h"

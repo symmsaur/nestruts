@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fmt/printf.h" 
+#include "fmt/printf.h"
 
 enum class log_level {
 	debug,

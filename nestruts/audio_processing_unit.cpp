@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "audio_processing_unit.h"
 #include "log.h"
 

@@ -1,8 +1,6 @@
 // nestruts.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
-
 #include <memory>
 #include <iostream>
 #include <cstdio>
@@ -62,8 +60,8 @@
 
 std::tuple<std::shared_ptr<picture_processing_unit>, std::unique_ptr<memory_bus>, std::shared_ptr<audio_processing_unit>> load_rom(std::string filename)
 {
-	FILE *rom;
-	if (fopen_s(&rom, filename.c_str(), "rb") || rom == nullptr)
+	FILE *rom{std::fopen(filename.c_str(), "rb")};
+	if (rom == nullptr)
 	{
 		throw std::runtime_error("failed to open file");
 	}
@@ -113,7 +111,7 @@ std::tuple<std::shared_ptr<picture_processing_unit>, std::unique_ptr<memory_bus>
 
 int test_game()
 {
-	auto [ppu, bus, apu] = load_rom("game.nes"); // Hardcoded rom for now
+	auto [ppu, bus, apu] = load_rom("roms/dk.nes"); // Hardcoded rom for now
 	// The reset vector is always stored at this address in ROM.
 	uint16_t reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
 	auto cpu = std::make_unique<core6502>(
