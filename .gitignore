@@ -215,5 +215,9 @@ ModelManifest.xml
 # No roms in the repo
 roms/
 
-#clangd cache
+# clangd cache
 .cache/
+
+# meson subprojects stuff
+subprojects/*
+!subprojects/*.wrap
