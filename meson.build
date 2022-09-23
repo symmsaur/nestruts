@@ -2,6 +2,9 @@ project('nestruts', 'cpp',
     version : '0.1',
     default_options : ['warning_level=3'])
 
+catch2_proj = subproject('catch2')
+catch2_dep = dependency('catch2-with-main')
+
 fmt_proj = subproject('fmt')
 fmt_dep = dependency('fmt')
 sdl2 = meson.get_compiler('cpp').find_library('SDL2')
