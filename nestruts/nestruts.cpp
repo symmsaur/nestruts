@@ -11,53 +11,6 @@
 #include "log.h"
 #include "audio_processing_unit.h"
 
-//int test_lda_imm()
-//{
-//	std::cout << "LDA" << std::endl;
-//	std::unique_ptr<memory_bus> m(new memory_bus(NULL), new audio_processing_unit());
-//	m->write(0x0000, 0xA9); // LDA immediate
-//	m->write(0x0001, 0x11); // value
-//	std::unique_ptr<core6502> c(new core6502(std::move(m), []() {return false; }));
-//	c->setpp(0x0000);
-//	c->cycle();
-//	std::cout << "Acc: " << std::hex << (int)c->get_acc() << std::endl;
-//	return 0;
-//}
-//
-//int test_adc_imm()
-//{
-//	std::cout << "ADC" << std::endl;
-//	std::unique_ptr<memory_bus> m(new memory_bus(NULL), new audio_processing_unit());
-//	m->write(0x0000, 0xA9); // LDA immediate
-//	m->write(0x0001, 0x11); // value
-//	m->write(0x0002, 0x69); // ADC immediate
-//	m->write(0x0003, 0x22); // value
-//	std::unique_ptr<core6502> c(new core6502(std::move(m),[]() {return false; }));
-//	c->setpp(0x0000);
-//	c->cycle();
-//	c->cycle();
-//	std::cout << "Acc: " << std::hex << (int)c->get_acc() << std::endl;
-//	return 0;
-//}
-//
-//int test_adc_abs()
-//{
-//	std::cout << "ADC Absolute" << std::endl;
-//	std::unique_ptr<memory_bus> m(new memory_bus(NULL));
-//	m->write(0x0000, 0xA9); // LDA immediate
-//	m->write(0x0001, 0x08); // value
-//	m->write(0x0002, 0x6D); // ADC absolute
-//	m->write(0x0003, 0x12); // low adr
-//	m->write(0x0004, 0x34); // high adr
-//	m->write(0x3412, 0x09); // value
-//	std::unique_ptr<core6502> c(new core6502(std::move(m), []() {return false; }));
-//	c->setpp(0x0000);
-//	c->cycle();
-//	c->cycle();
-//	std::cout << "Acc: " << std::hex << (int)c->get_acc() << std::endl;
-//	return 0;
-//}
-
 std::tuple<std::shared_ptr<picture_processing_unit>, std::unique_ptr<memory_bus>, std::shared_ptr<audio_processing_unit>> load_rom(std::string filename)
 {
 	FILE *rom{std::fopen(filename.c_str(), "rb")};
@@ -158,9 +111,6 @@ int main(int argc, char* argv[])
 {
 	static_cast<void>(argc);
 	static_cast<void>(argv);
-	//test_lda_imm();
-	//test_adc_imm();
-	//test_adc_abs();
 	test_game();
 
 	return 0;
