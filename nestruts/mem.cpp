@@ -62,7 +62,7 @@ void memory_bus::write(uint16_t adr, uint8_t val)
 		log(log_level::debug, "\tWrite APU frame counter");
 		apu->set_frame_counter(val);
 	}
-	else if (adr >= 0x4000 && adr <= 0x4013 || adr==0x4015)
+	else if ((adr >= 0x4000 && adr <= 0x4013) || adr==0x4015)
 	{
 		log(log_level::debug, "\tWriting to unimplemented APU: %#6x\n", adr);
 	}

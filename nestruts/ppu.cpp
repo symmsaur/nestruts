@@ -117,7 +117,8 @@ void picture_processing_unit::draw_sprites()
 	constexpr size_t sprite_pitch = 4;
 	constexpr size_t y_offset = 0;
 	constexpr size_t tile_index_offset = 1;
-	constexpr size_t attributes_offset = 2;
+	// TODO: Attributes are unused
+	// constexpr size_t attributes_offset = 2;
 	constexpr size_t x_offset = 3;
 	// Refactor this magical thing to get it to draw in the correct place
 	constexpr auto base_x = 8 * 32 + 9 + 17 * 9;
@@ -126,7 +127,8 @@ void picture_processing_unit::draw_sprites()
 		// Sprites are offset by one in y.
 		auto const y = oam.at(i * sprite_pitch + y_offset) + 1;
 		auto const tile_index = oam.at(i * sprite_pitch + tile_index_offset);
-		auto const attributes = oam.at(i * sprite_pitch + attributes_offset);
+		// TODO: Attributes are unused
+		//auto const attributes = oam.at(i * sprite_pitch + attributes_offset);
 		auto const x = oam.at(i * sprite_pitch + x_offset);
 		draw_tile(base_x + x, y, tile_index);
 
