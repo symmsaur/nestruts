@@ -13,6 +13,20 @@ namespace
 	constexpr uint8_t negative_flag = 1 << 7;
 }
 
+std::ostream& operator<<(std::ostream& stream, state s) {
+	stream << "State {\n";
+	stream << "  nmi_low: " << s.nmi_low << "\n";
+	stream << "  status: " << static_cast<int>(s.status) << "\n";
+	stream << "  accumulator: " << static_cast<int>(s.accumulator) << "\n";
+	stream << "  x: " << static_cast<int>(s.x) << "\n";
+	stream << "  y: " << static_cast<int>(s.y) << "\n";
+	stream << "  sp: " << static_cast<int>(s.sp) << "\n";
+	stream << "  pp: " << s.pp << "\n";
+	stream << "  faulted: " << s.faulted << "\n";
+	stream << "}";
+	return stream;
+}
+
 core6502::core6502(std::unique_ptr<memory_bus> bus, std::function<bool()> nmi_func, std::function<bool()> irq_func) : bus{ std::move(bus) }, nmi_func{ nmi_func }, irq_func{ irq_func }, sp{ 0xff } { }
 
 void core6502::cycle()
@@ -77,6 +91,19 @@ uint8_t core6502::get_acc()
 	return accumulator;
 }
 
+state core6502::dump_state()
+{
+	state s{};
+	s.nmi_low = nmi_low;
+	s.status = status;
+	s.accumulator = accumulator;
+	s.x = x;
+	s.y = y;
+	s.sp = sp;
+	s.pp = pp;
+	s.faulted = faulted;
+	return s;
+}
 bool core6502::is_faulted()
 {
 	return faulted;
@@ -642,6 +669,7 @@ void core6502::execute()
 	case 0x08:
 		log(log_level::instr, "PHP");
 		PHP();
+		break;
 	case 0x00:
 		log(log_level::instr, "BRK");
 		BRK();
@@ -723,7 +751,7 @@ void core6502::set_negative_flag(uint8_t val)
 
 void core6502::set_overflow_flag_add(uint8_t prev, uint8_t res)
 {
-	if ((0x80 & prev ^ 0x80) & (0x80 & res)) status |= overflow_flag;
+	if (((0x80 & prev) ^ 0x80) & (0x80 & res)) status |= overflow_flag;
 	else status &= ~overflow_flag;
 }
 

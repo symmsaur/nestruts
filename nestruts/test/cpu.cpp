@@ -40,3 +40,21 @@ TEST_CASE("ADC Absolute", "[instruction]") {
 	cpu->cycle();
     REQUIRE(cpu->get_acc() == 0x08 + 0x09);
 }
+
+TEST_CASE("PHP", "[instruction]") {
+	auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+	m->write(0x0000, 0x38); // SEC
+	m->write(0x0001, 0x08); // PHP
+	m->write(0x0002, 0x68); // PLA
+    auto cpu = std::make_unique<core6502>(std::move(m), []{return false; }, []{return false;});
+	cpu->setpp(0x0000);
+	cpu->cycle();
+    auto expected_state = cpu->dump_state();
+    expected_state.pp++;
+    expected_state.sp--;
+	cpu->cycle();
+    auto post_state = cpu->dump_state();
+	cpu->cycle();
+    REQUIRE(expected_state == post_state);
+    REQUIRE(cpu->get_acc() == 0x01);
+}

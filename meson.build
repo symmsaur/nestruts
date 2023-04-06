@@ -1,6 +1,6 @@
 project('nestruts', 'cpp',
     version : '0.1',
-    default_options : ['warning_level=3'])
+    default_options : ['warning_level=3',  'cpp_std=c++20'])
 
 catch2_proj = subproject('catch2')
 catch2_dep = dependency('catch2-with-main')

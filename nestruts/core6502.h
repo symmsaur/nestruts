@@ -3,6 +3,21 @@
 #include <memory>
 #include <cstdint>
 #include <functional>
+#include <ostream>
+
+struct state {
+	bool nmi_low{};
+	uint8_t status{};
+	uint8_t accumulator{};
+	uint8_t x{};
+	uint8_t y{};
+	uint8_t sp{};
+	uint16_t pp{};
+	bool faulted{};
+	friend auto operator <=>(state const & lhs, state const & rhs) = default;
+};
+
+std::ostream& operator<<(std::ostream& stream, state);
 
 class core6502 final
 {
@@ -14,8 +29,11 @@ public:
 	void irq();
 
 	void setpp(uint16_t new_pp);
+
 	uint8_t get_acc();
 	bool is_faulted();
+	state dump_state();
+
 
 private:
 	const uint16_t stack_offs{ 0x100 };
