@@ -62,3 +62,24 @@ TEST_CASE("PHP", "[instruction]") {
     REQUIRE(expected_state == post_state);
     REQUIRE(cpu->get_acc() == 0x01);
 }
+
+TEST_CASE("AND Immediate", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA9); // LDA immediate
+    m->write(0x0001, 0x11); // value
+    m->write(0x0002, 0x29); // AND Immediate
+    m->write(0x0003, 0x22); // value
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDA 0x11
+    auto expected_state = cpu->dump_state();
+    expected_state.pp += 2;
+    expected_state.accumulator = 0x00;
+    // TODO: Expose these flag definitions
+    expected_state.status |= 1 << 1; // Zero flag should be set
+    cpu->cycle();                    // AND 0x22
+    auto post_state = cpu->dump_state();
+    REQUIRE(expected_state == post_state);
+    REQUIRE(cpu->get_acc() == 0x00);
+}

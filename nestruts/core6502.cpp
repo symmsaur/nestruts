@@ -703,7 +703,7 @@ void core6502::set_zero_flag(uint8_t val) {
 }
 
 void core6502::set_negative_flag(uint8_t val) {
-    if (!val)
+    if (val & (1 << 7))
         status |= negative_flag;
     else
         status &= ~negative_flag;
