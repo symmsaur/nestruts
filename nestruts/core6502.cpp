@@ -15,7 +15,17 @@ constexpr uint8_t negative_flag = 1 << 7;
 std::ostream &operator<<(std::ostream &stream, state s) {
     stream << "State {\n";
     stream << "  nmi_low: " << s.nmi_low << "\n";
-    stream << "  status: " << static_cast<int>(s.status) << "\n";
+
+    stream << "  status: ";
+    stream << (s.status & negative_flag ? "N" : "-");
+    stream << (s.status & overflow_flag ? "O" : "-");
+    stream << "--"; // Bits 4 and 5
+    stream << (s.status & decimal_flag ? "D" : "-");
+    stream << (s.status & interrupt_disable_flag ? "I" : "-");
+    stream << (s.status & zero_flag ? "Z" : "-");
+    stream << (s.status & carry_flag ? "C" : "-");
+    stream << "\n";
+
     stream << "  accumulator: " << static_cast<int>(s.accumulator) << "\n";
     stream << "  x: " << static_cast<int>(s.x) << "\n";
     stream << "  y: " << static_cast<int>(s.y) << "\n";
