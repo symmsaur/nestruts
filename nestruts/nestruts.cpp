@@ -67,7 +67,7 @@ load_rom(std::string filename) {
 }
 
 int test_game() {
-    auto [ppu, bus, apu] = load_rom("roms/dk.nes"); // Hardcoded rom for now
+    auto [ppu, bus, apu] = load_rom("../roms/dk.nes"); // Hardcoded rom for now
     // The reset vector is always stored at this address in ROM.
     uint16_t reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
     auto cpu = std::make_unique<core6502>(
