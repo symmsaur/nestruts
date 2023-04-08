@@ -18,10 +18,24 @@ lib = library(
         'nestruts/mem.cpp',
         'nestruts/ppu.cpp',
     ],
+    include_directories : [
+        'nestruts',
+    ],
     dependencies : [
         fmt_dep,
         sdl2,
     ],
+)
+
+lib_dep = declare_dependency(
+    include_directories : [
+        'nestruts'
+    ],
+    dependencies : [
+        fmt_dep,
+        sdl2,
+    ],
+    link_with : lib,
 )
 
 main = executable('nestruts',
@@ -29,19 +43,16 @@ main = executable('nestruts',
         'nestruts/nestruts.cpp',
     ],
     dependencies : [
-        fmt_dep,
-        sdl2,
+        lib_dep,
     ],
-    link_with : lib,
     )
 
 
 struts_test = executable('struts_test', ['nestruts/test/cpu.cpp',],
     dependencies : [
         catch2_dep,
-        fmt_dep,
+        lib_dep,
     ],
-    link_with : lib,
 )
 
 test('basic', struts_test)
