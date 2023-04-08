@@ -33,6 +33,7 @@ public:
 	void setpp(uint16_t new_pp);
 
 	uint8_t get_acc();
+	uint8_t get_x() { return x; };
 	bool is_faulted();
 	state dump_state();
 

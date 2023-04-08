@@ -43,6 +43,98 @@ TEST_CASE("LDA X-Indexed Absolute", "[instruction]") {
     REQUIRE(cpu->get_acc() == 0xCD);
 }
 
+TEST_CASE("LDA Y-Indexed Absolute", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA0); // LDY immediate
+    m->write(0x0001, 0x10); // value
+    m->write(0x0002, 0xB9); // LDA Y-Indexed Absolute
+    m->write(0x0003, 0x34); // addr low
+    m->write(0x0004, 0x12); // addr high
+    m->write(0x1244, 0xCE); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDX 0x10
+    cpu->cycle(); // LDA
+    REQUIRE(cpu->get_acc() == 0xCE);
+}
+
+TEST_CASE("LDA Zero Page", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA5); // LDA Zero Page
+    m->write(0x0001, 0x44); // offset
+    m->write(0x0044, 0xBA); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDA
+    REQUIRE(cpu->get_acc() == 0xBA);
+}
+
+TEST_CASE("LDA X-Indexed Zero Page", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA2); // LDX immediate
+    m->write(0x0001, 0x11); // value
+    m->write(0x0002, 0xB5); // LDA X-Indexed Zero Page
+    m->write(0x0003, 0x44); // offset
+    m->write(0x0055, 0xCB); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDX
+    cpu->cycle(); // LDA
+    REQUIRE(cpu->get_acc() == 0xCB);
+}
+
+TEST_CASE("LDA X-Indexed Zero Page Indirect", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA2); // LDX immediate
+    m->write(0x0001, 0x12); // value
+    m->write(0x0002, 0xA1); // LDA X-Indexed Zero Page Indirect
+    m->write(0x0003, 0x31); // offset
+    m->write(0x0043, 0xAB); // address low
+    m->write(0x0044, 0x12); // address high
+    m->write(0x12AB, 0x17); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDX
+    cpu->cycle(); // LDA
+    REQUIRE(cpu->get_acc() == 0x17);
+}
+
+TEST_CASE("LDA Zero Page Indirect Y-Indexed", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA0); // LDY immediate
+    m->write(0x0001, 0x02); // value
+    m->write(0x0002, 0xB1); // LDA Zero Page Indirect Y-Indexed
+    m->write(0x0003, 0x20); // Zero page address
+    m->write(0x0020, 0xFF); // addr low (added with Y)
+    m->write(0x0021, 0x11); // addr high
+    m->write(0x1201, 0x21); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDY
+    cpu->cycle(); // LDA
+    REQUIRE(cpu->get_acc() == 0x21);
+}
+
+TEST_CASE("LDX Y-Indexed Zero Page", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0xA0); // LDY immediate
+    m->write(0x0001, 0x10); // value
+    m->write(0x0002, 0xB6); // LDX Y-Indexed Zero Page
+    m->write(0x0003, 0x31); // offset
+    m->write(0x0041, 0x19); // value to read
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    cpu->cycle(); // LDY
+    cpu->cycle(); // LDX
+    REQUIRE(cpu->get_x() == 0x19);
+}
+
 TEST_CASE("ADC Immediate", "[instruction]") {
     auto m = std::make_unique<memory_bus>(nullptr, nullptr);
     m->write(0x0000, 0xA9); // LDA immediate

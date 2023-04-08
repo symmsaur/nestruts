@@ -664,7 +664,7 @@ uint16_t core6502::zero_x(uint8_t adr) {
 }
 
 uint16_t core6502::zero_y(uint8_t adr) {
-    uint8_t mod_adr = adr + x;
+    uint8_t mod_adr = adr + y;
     return mod_adr;
 }
 
@@ -681,11 +681,9 @@ uint16_t core6502::absolute_y(uint8_t low, uint8_t high) {
 }
 
 uint16_t core6502::indirect_x(uint8_t adr) {
-    uint8_t zp_val = bus->read(adr);
-    uint8_t low = zp_val + x;
-    uint8_t high = zp_val + x + 1;
-    uint16_t mod_adr = bus->read(low) + (bus->read(high) << 8);
-    return mod_adr;
+    uint8_t low = bus->read(adr + x);
+    uint8_t high = bus->read(adr + x + 1);
+    return low + (high << 8);
 }
 
 uint16_t core6502::indirect_y(uint8_t adr) {
