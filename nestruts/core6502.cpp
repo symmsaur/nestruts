@@ -695,7 +695,10 @@ uint16_t core6502::indirect_y(uint8_t adr) {
 }
 
 uint16_t core6502::indirect(uint8_t low_adr, uint8_t high_adr) {
-    return bus->read(low_adr) + (bus->read(high_adr) << 8);
+    uint16_t base_adr = (high_adr << 8) + low_adr;
+    // If the address passes a page boundary do not increment the high part.
+    uint16_t next_adr = (high_adr << 8) + static_cast<uint8_t>(low_adr + 1);
+    return bus->read(base_adr) + (bus->read(next_adr) << 8);
 }
 
 void core6502::set_zero_flag(uint8_t val) {

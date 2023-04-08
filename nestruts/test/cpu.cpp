@@ -219,3 +219,37 @@ TEST_CASE("AND Immediate", "[instruction]") {
         REQUIRE(expected_state == post_state);
     }
 }
+
+TEST_CASE("JMP Indirect", "[instruction]") {
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0x6C); // JMP Indirect
+    m->write(0x0001, 0x34); // Address low
+    m->write(0x0002, 0x12); // Address high
+    m->write(0x1234, 0x02); // Jump address low
+    m->write(0x1235, 0x10); // Jump address high
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    auto expected_state = cpu->dump_state();
+    expected_state.pp = 0x1002;
+    cpu->cycle(); // JMP
+    REQUIRE(expected_state == cpu->dump_state());
+}
+
+TEST_CASE("JMP Indirect Wrapping", "[instruction]") {
+    // Test weird wrapping behavior
+    auto m = std::make_unique<memory_bus>(nullptr, nullptr);
+    m->write(0x0000, 0x6C); // JMP Indirect
+    m->write(0x0001, 0xFF); // Address low
+    m->write(0x0002, 0x12); // Address high
+    m->write(0x12FF, 0x03); // Jump address low
+    // We don't go to 0x1300 next!
+    m->write(0x1200, 0x11); // Jump address high
+    auto cpu = std::make_unique<core6502>(
+        std::move(m), [] { return false; }, [] { return false; });
+    cpu->setpp(0x0000);
+    auto expected_state = cpu->dump_state();
+    expected_state.pp = 0x1103;
+    cpu->cycle(); // JMP
+    REQUIRE(expected_state == cpu->dump_state());
+}
