@@ -39,7 +39,9 @@ std::ostream &operator<<(std::ostream &stream, state s) {
 core6502::core6502(std::unique_ptr<memory_bus> bus,
                    std::function<bool()> nmi_func,
                    std::function<bool()> irq_func)
-    : bus{std::move(bus)}, nmi_func{nmi_func}, irq_func{irq_func}, sp{0xff} {}
+    : bus{std::move(bus)}, nmi_func{nmi_func}, irq_func{irq_func}, sp{0xff} {
+    log(log_level::debug, "\nCreated core6502\n");
+}
 
 void core6502::cycle() {
     interrupt();
@@ -251,6 +253,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         faulted = true;
         return 0u;
     }
+    logf(log_level::instr, " ");
 }
 uint16_t core6502::tgt_adr(uint8_t opcode) {
     logf(log_level::instr, " ");

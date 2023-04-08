@@ -9,7 +9,7 @@ memory_bus::memory_bus(std::shared_ptr<picture_processing_unit> p,
 void memory_bus::write(uint16_t adr, uint8_t val) {
     // RAM
     if (adr < 0x2000) {
-        logf(log_level::debug, "\twrite RAM %#06x=%#04x", adr, val);
+        logf(log_level::debug, "w %#06x=%#04x ", adr, val);
         uint16_t mod_adr = adr % 0x800;
         ram[mod_adr] = val;
     }
@@ -71,7 +71,7 @@ uint8_t memory_bus::read(uint16_t adr) {
     // RAM
     if (adr < 0x2000) {
         uint16_t mod_adr = adr % 0x800;
-        logf(log_level::debug, "\tread RAM %#06x=%#04x", adr, ram[mod_adr]);
+        logf(log_level::debug, "r %#06x=%#04x ", adr, ram[mod_adr]);
         return ram[mod_adr];
     }
     // PPU
