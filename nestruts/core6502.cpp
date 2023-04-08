@@ -646,6 +646,7 @@ void core6502::execute() {
         break;
     default:
         logf(log_level::error, "Unrecognized instruction %#04x\n", opcode);
+        log(log_level::error, "{}\n", dump_state());
         faulted = true;
         break;
     }

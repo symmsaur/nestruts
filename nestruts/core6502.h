@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <ostream>
+#include "fmt/ostream.h"
 
 struct state {
 	bool nmi_low{};
@@ -18,6 +19,7 @@ struct state {
 };
 
 std::ostream& operator<<(std::ostream& stream, state);
+template<> struct fmt::formatter<state> : fmt::ostream_formatter {};
 
 class core6502 final
 {

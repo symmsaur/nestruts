@@ -39,6 +39,7 @@ main = executable('nestruts',
 struts_test = executable('struts_test', ['nestruts/test/cpu.cpp',],
     dependencies : [
         catch2_dep,
+        fmt_dep,
     ],
     link_with : lib,
 )
