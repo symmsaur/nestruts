@@ -15,11 +15,11 @@ void picture_processing_unit::cycle() {
         --warmup;
         if (!warmup) {
             draw_debug();
-            log(log_level::debug, "warmup done\n");
+            logf(log_level::debug, "warmup done\n");
             draw = 1000000;
         }
         if ((warmup % 1000) == 0) {
-            log(log_level::debug, "warmup %i cycles left\n", warmup);
+            logf(log_level::debug, "warmup %i cycles left\n", warmup);
         }
         return;
     }
@@ -27,7 +27,7 @@ void picture_processing_unit::cycle() {
         --draw;
         if (!draw) {
             vblank = 100000;
-            log(log_level::debug, "draw -> vblank\n");
+            logf(log_level::debug, "draw -> vblank\n");
             NMI_occured = true;
         }
         return;
@@ -37,7 +37,7 @@ void picture_processing_unit::cycle() {
         if (!vblank) {
             draw_debug();
             NMI_occured = false;
-            log(log_level::debug, "vblank -> draw\n");
+            logf(log_level::debug, "vblank -> draw\n");
             draw = 1000000;
         }
         return;
@@ -129,7 +129,7 @@ void picture_processing_unit::draw_debug() {
 }
 
 uint8_t picture_processing_unit::read_PPUSTATUS() {
-    log(log_level::debug, "\tread PPUSTATUS");
+    logf(log_level::debug, "\tread PPUSTATUS");
     auto PPUSTATUS = NMI_occured << 7;
     PPUSCROLL_latch = false;
     PPUADDR_latch = false;
@@ -138,22 +138,22 @@ uint8_t picture_processing_unit::read_PPUSTATUS() {
 }
 
 void picture_processing_unit::set_PPUCTRL(uint8_t val) {
-    log(log_level::debug, "\twrite PPUCTRL %#04x", val);
+    logf(log_level::debug, "\twrite PPUCTRL %#04x", val);
     PPUCTRL = val;
 }
 
 void picture_processing_unit::set_PPUMASK(uint8_t val) {
-    log(log_level::debug, "\twrite PPUMASK %#04x", val);
+    logf(log_level::debug, "\twrite PPUMASK %#04x", val);
     PPUMASK = val;
 }
 
 void picture_processing_unit::set_OAMADDR(uint8_t val) {
-    log(log_level::debug, "\twrite OAMADDR %#04x", val);
+    logf(log_level::debug, "\twrite OAMADDR %#04x", val);
     OAMADDR = val;
 }
 
 void picture_processing_unit::write_PPUSCROLL(uint8_t val) {
-    log(log_level::debug, "\twrite PPUSCROLL");
+    logf(log_level::debug, "\twrite PPUSCROLL");
     // TODO: Determine if it goes back and forth between X and Y
     // or if it goes X, Y, Y, Y ...
     if (!PPUSCROLL_latch) {
@@ -166,16 +166,16 @@ void picture_processing_unit::write_PPUSCROLL(uint8_t val) {
 }
 
 void picture_processing_unit::write_PPUADDR(uint8_t val) {
-    log(log_level::debug, "\twrite PPUADDR %#04x", val);
+    logf(log_level::debug, "\twrite PPUADDR %#04x", val);
     // TODO: Determine if it goes back and forth between X and Y
     // or if it goes X, Y, Y, Y ...
     if (!PPUADDR_latch) {
         assert(!PPUADDR_latch);
-        log(log_level::debug, " high");
+        logf(log_level::debug, " high");
         PPUADDR = (val << 8) + (0x00FF & PPUADDR);
         PPUADDR_latch = true;
     } else {
-        log(log_level::debug, " low");
+        logf(log_level::debug, " low");
         PPUADDR = (PPUADDR & 0xFF00) + val;
         PPUADDR_latch = false;
     }
@@ -183,7 +183,7 @@ void picture_processing_unit::write_PPUADDR(uint8_t val) {
 
 void picture_processing_unit::write_PPUDATA(uint8_t val) {
     if (PPUADDR < 0x2000) {
-        log(log_level::debug, "\tTrying to write to PPU ROM");
+        logf(log_level::debug, "\tTrying to write to PPU ROM");
     } else if (PPUADDR < 0x3000) {
         uint16_t mod_adr = PPUADDR - 0x2000;
         // Outside of VRAM?
@@ -191,11 +191,12 @@ void picture_processing_unit::write_PPUDATA(uint8_t val) {
             // Mirror
             mod_adr -= 0x0800;
         }
-        log(log_level::debug, "\t PPUDATA(%#6x)=%#4x", PPUADDR, val);
+        logf(log_level::debug, "\t PPUDATA(%#6x)=%#4x", PPUADDR, val);
         ram[mod_adr] = val;
         // draw_debug();
     } else {
-        log(log_level::error, "\nUnsupported PPUDATA write to %#6x\n", PPUADDR);
+        logf(log_level::error, "\nUnsupported PPUDATA write to %#6x\n",
+             PPUADDR);
     }
     if (PPUCTRL & 0x04) {
         PPUADDR += 32;

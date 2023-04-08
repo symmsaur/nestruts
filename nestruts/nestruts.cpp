@@ -83,7 +83,7 @@ int test_game() {
             ppu->cycle();
             apu->cycle();
             if (cycles % 100000 == 0) {
-                log(log_level::info, ".");
+                logf(log_level::info, ".");
             }
         }
         if (cycles % 1000 == 0) {

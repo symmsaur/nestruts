@@ -61,27 +61,27 @@ void core6502::interrupt() {
 }
 
 void core6502::nmi() {
-    log(log_level::instr, "Triggered NMI\n");
-    log(log_level::debug, "\t push pp");
+    logf(log_level::instr, "Triggered NMI\n");
+    logf(log_level::debug, "\t push pp");
     pushpp();
-    log(log_level::debug, "\t push status ");
+    logf(log_level::debug, "\t push status ");
     push(status);
-    log(log_level::debug, "\n");
+    logf(log_level::debug, "\n");
     uint16_t addr = bus->read(0xFFFA) + (bus->read(0xFFFB) << 8);
     set_pp(addr);
 }
 
 void core6502::irq() {
-    log(log_level::instr, "Triggered IRQ\n");
-    log(log_level::debug, "\t push pp");
+    logf(log_level::instr, "Triggered IRQ\n");
+    logf(log_level::debug, "\t push pp");
     pushpp();
-    log(log_level::debug, "\t push status ");
+    logf(log_level::debug, "\t push status ");
     push(status);
-    log(log_level::debug, "\n");
+    logf(log_level::debug, "\n");
     uint16_t addr = bus->read(0xFFFE) + (bus->read(0xFFFF) << 8);
-    log(log_level::debug, "jumping to %06x\n", addr);
+    logf(log_level::debug, "jumping to %06x\n", addr);
     set_pp(addr);
-    log(log_level::debug, "setting interrupt disable status flag\n");
+    logf(log_level::debug, "setting interrupt disable status flag\n");
     status |= interrupt_disable_flag;
 }
 
@@ -119,7 +119,7 @@ uint8_t core6502::pop() {
 }
 
 uint8_t core6502::bus_val(uint8_t opcode) {
-    log(log_level::instr, " ");
+    logf(log_level::instr, " ");
     switch (opcode) {
     case 0xA9:
     case 0x69:
@@ -134,7 +134,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xE9: {
 
         uint8_t arg = fetch();
-        log(log_level::instr, "#%02x", arg);
+        logf(log_level::instr, "#%02x", arg);
         return arg;
     }
     case 0x30:
@@ -145,7 +145,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xD0:
     case 0xF0: {
         uint8_t arg = fetch();
-        log(log_level::instr, "*%i", static_cast<int8_t>(arg));
+        logf(log_level::instr, "*%i", static_cast<int8_t>(arg));
         return arg;
     }
     case 0xA5:
@@ -161,7 +161,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x45:
     case 0xE5: {
         uint8_t arg = fetch();
-        log(log_level::instr, "$%02x", arg);
+        logf(log_level::instr, "$%02x", arg);
         return bus->read(zero(arg));
     }
     case 0xB5:
@@ -173,12 +173,12 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x55:
     case 0xF5: {
         uint8_t arg = fetch();
-        log(log_level::instr, "$%02x,X", arg);
+        logf(log_level::instr, "$%02x,X", arg);
         return bus->read(zero_x(arg));
     }
     case 0xB6: {
         uint8_t arg = fetch();
-        log(log_level::instr, "$%02x,Y", arg);
+        logf(log_level::instr, "$%02x,Y", arg);
         return bus->read(zero_y(arg));
     }
     case 0xAD:
@@ -195,7 +195,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xED: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "$%02x%02x", high_adr, low_adr);
+        logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
         return bus->read(absolute(low_adr, high_adr));
     }
     case 0xBD:
@@ -208,7 +208,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xFD: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
+        logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
         return bus->read(absolute_x(low_adr, high_adr));
     }
     case 0xB9:
@@ -221,7 +221,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xF9: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "$%02x%02x,Y", high_adr, low_adr);
+        logf(log_level::instr, "$%02x%02x,Y", high_adr, low_adr);
         return bus->read(absolute_y(low_adr, high_adr));
     }
     case 0xA1:
@@ -232,7 +232,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x41:
     case 0xE1: {
         uint8_t arg = fetch();
-        log(log_level::instr, "($%02x,X)", arg);
+        logf(log_level::instr, "($%02x,X)", arg);
         return bus->read(indirect_x(arg));
     }
     case 0xB1:
@@ -243,17 +243,17 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x51:
     case 0xF1: {
         uint8_t arg = fetch();
-        log(log_level::instr, "($%02x),Y", arg);
+        logf(log_level::instr, "($%02x),Y", arg);
         return bus->read(indirect_y(arg));
     }
     default:
-        log(log_level::error, "Unsupported opcode for bus_val %#4x", opcode);
+        logf(log_level::error, "Unsupported opcode for bus_val %#4x", opcode);
         faulted = true;
         return 0u;
     }
 }
 uint16_t core6502::tgt_adr(uint8_t opcode) {
-    log(log_level::instr, " ");
+    logf(log_level::instr, " ");
     switch (opcode) {
     case 0x06:
     case 0x85:
@@ -265,7 +265,7 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x66:
     case 0x26: {
         uint8_t arg = fetch();
-        log(log_level::instr, "$%02x", arg);
+        logf(log_level::instr, "$%02x", arg);
         return zero(arg);
     }
     case 0x16:
@@ -278,7 +278,7 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x76:
     case 0x36: {
         uint8_t arg = fetch();
-        log(log_level::instr, "$%02x,X", arg);
+        logf(log_level::instr, "$%02x,X", arg);
         return zero_x(arg);
     }
     case 0x0E:
@@ -294,7 +294,7 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x2E: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "$%02x%02x", high_adr, low_adr);
+        logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
         return absolute(low_adr, high_adr);
     }
     case 0x1E:
@@ -306,40 +306,41 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x3E: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
+        logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
         return absolute_x(low_adr, high_adr);
     }
     case 0x99: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, " $%02x%02x,Y", high_adr, low_adr);
+        logf(log_level::instr, " $%02x%02x,Y", high_adr, low_adr);
         return absolute_y(low_adr, high_adr);
     }
     case 0x81: {
         uint8_t arg = fetch();
-        log(log_level::instr, "($%02x,X)", arg);
+        logf(log_level::instr, "($%02x,X)", arg);
         return indirect_x(arg);
     }
     case 0x91: {
         uint8_t arg = fetch();
-        log(log_level::instr, "($%02x),Y", arg);
+        logf(log_level::instr, "($%02x),Y", arg);
         return indirect_y(arg);
     }
     case 0x6C: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
-        log(log_level::instr, "($%02x%02x)", high_adr, low_adr);
+        logf(log_level::instr, "($%02x%02x)", high_adr, low_adr);
         return indirect(low_adr, high_adr);
     }
     default:
-        log(log_level::error, "Failure to get tgt_adr for opcode %#4x", opcode);
+        logf(log_level::error, "Failure to get tgt_adr for opcode %#4x",
+             opcode);
         faulted = true;
         return 0u;
     }
 }
 
 void core6502::execute() {
-    log(log_level::instr, "%#06x: ", pp);
+    logf(log_level::instr, "%#06x: ", pp);
     uint8_t opcode = fetch();
     switch (opcode) {
     case 0xA9:
@@ -350,7 +351,7 @@ void core6502::execute() {
     case 0xB9:
     case 0xA1:
     case 0xB1:
-        log(log_level::instr, "LDA");
+        logf(log_level::instr, "LDA");
         LDA(bus_val(opcode));
         break;
     case 0xA0:
@@ -358,7 +359,7 @@ void core6502::execute() {
     case 0xB4:
     case 0xAC:
     case 0xBC:
-        log(log_level::instr, "LDY");
+        logf(log_level::instr, "LDY");
         LDY(bus_val(opcode));
         break;
     case 0xA2:
@@ -366,7 +367,7 @@ void core6502::execute() {
     case 0xB6:
     case 0xAE:
     case 0xBE:
-        log(log_level::instr, "LDX");
+        logf(log_level::instr, "LDX");
         LDX(bus_val(opcode));
         break;
     case 0x69:
@@ -377,7 +378,7 @@ void core6502::execute() {
     case 0x79:
     case 0x61:
     case 0x71:
-        log(log_level::instr, "ADC");
+        logf(log_level::instr, "ADC");
         ADC(bus_val(opcode));
         break;
     case 0xE9:
@@ -388,7 +389,7 @@ void core6502::execute() {
     case 0xF9:
     case 0xE1:
     case 0xF1:
-        log(log_level::instr, "SBC");
+        logf(log_level::instr, "SBC");
         SBC(bus_val(opcode));
         break;
     case 0x29:
@@ -399,7 +400,7 @@ void core6502::execute() {
     case 0x39:
     case 0x21:
     case 0x31:
-        log(log_level::instr, "AND");
+        logf(log_level::instr, "AND");
         AND(bus_val(opcode));
         break;
     case 0x09:
@@ -410,7 +411,7 @@ void core6502::execute() {
     case 0x19:
     case 0x01:
     case 0x11:
-        log(log_level::instr, "ORA");
+        logf(log_level::instr, "ORA");
         ORA(bus_val(opcode));
         break;
     case 0x49:
@@ -421,11 +422,11 @@ void core6502::execute() {
     case 0x59:
     case 0x41:
     case 0x51:
-        log(log_level::instr, "EOR");
+        logf(log_level::instr, "EOR");
         EOR(bus_val(opcode));
         break;
     case 0x0A:
-        log(log_level::instr, "ASL");
+        logf(log_level::instr, "ASL");
         ASL();
         break;
     case 0xC9:
@@ -436,24 +437,24 @@ void core6502::execute() {
     case 0xD9:
     case 0xC1:
     case 0xD1:
-        log(log_level::instr, "CMP");
+        logf(log_level::instr, "CMP");
         CMP(bus_val(opcode));
         break;
     case 0xE0:
     case 0xE4:
     case 0xEC:
-        log(log_level::instr, "CPX");
+        logf(log_level::instr, "CPX");
         CPX(bus_val(opcode));
         break;
     case 0xC0:
     case 0xC4:
     case 0xCC:
-        log(log_level::instr, "CPY");
+        logf(log_level::instr, "CPY");
         CPY(bus_val(opcode));
         break;
     case 0x24:
     case 0x2C:
-        log(log_level::instr, "BIT");
+        logf(log_level::instr, "BIT");
         BIT(bus_val(opcode));
         break;
     case 0x06:
@@ -464,33 +465,33 @@ void core6502::execute() {
     case 0x56:
     case 0x4E:
     case 0x5E:
-        log(log_level::instr, "ASL");
+        logf(log_level::instr, "ASL");
         ASL(tgt_adr(opcode));
         break;
     case 0x4A:
-        log(log_level::instr, "LSR");
+        logf(log_level::instr, "LSR");
         LSR();
         break;
     case 0x2A:
-        log(log_level::instr, "ROL");
+        logf(log_level::instr, "ROL");
         ROL();
         break;
     case 0x26:
     case 0x36:
     case 0x2E:
     case 0x3E:
-        log(log_level::instr, "ROL");
+        logf(log_level::instr, "ROL");
         ROL(tgt_adr(opcode));
         break;
     case 0x6A:
-        log(log_level::instr, "ROR");
+        logf(log_level::instr, "ROR");
         ROR();
         break;
     case 0x66:
     case 0x76:
     case 0x6E:
     case 0x7E:
-        log(log_level::instr, "ROR");
+        logf(log_level::instr, "ROR");
         ROR(tgt_adr(opcode));
         break;
     case 0x85:
@@ -500,155 +501,155 @@ void core6502::execute() {
     case 0x99:
     case 0x81:
     case 0x91:
-        log(log_level::instr, "STA");
+        logf(log_level::instr, "STA");
         STA(tgt_adr(opcode));
         break;
     case 0x86:
     case 0x96:
     case 0x8E:
-        log(log_level::instr, "STX");
+        logf(log_level::instr, "STX");
         STX(tgt_adr(opcode));
         break;
     case 0x84:
     case 0x94:
     case 0x8C:
-        log(log_level::instr, "STY");
+        logf(log_level::instr, "STY");
         STY(tgt_adr(opcode));
         break;
     case 0xF0:
-        log(log_level::instr, "BEQ");
+        logf(log_level::instr, "BEQ");
         BEQ(bus_val(opcode));
         break;
     case 0x30:
-        log(log_level::instr, "BMI");
+        logf(log_level::instr, "BMI");
         BMI(bus_val(opcode));
         break;
     case 0xD0:
-        log(log_level::instr, "BNE");
+        logf(log_level::instr, "BNE");
         BNE(bus_val(opcode));
         break;
     case 0xB0:
-        log(log_level::instr, "BCS");
+        logf(log_level::instr, "BCS");
         BCS(bus_val(opcode));
         break;
     case 0x90:
-        log(log_level::instr, "BCC");
+        logf(log_level::instr, "BCC");
         BCC(bus_val(opcode));
         break;
     case 0x10:
-        log(log_level::instr, "BPL");
+        logf(log_level::instr, "BPL");
         BPL(bus_val(opcode));
         break;
     case 0x50:
-        log(log_level::instr, "BVC");
+        logf(log_level::instr, "BVC");
         BVC(bus_val(opcode));
         break;
     case 0x20:
-        log(log_level::instr, "JSR");
+        logf(log_level::instr, "JSR");
         JSR(tgt_adr(opcode));
         break;
     case 0x4C:
     case 0x6C:
-        log(log_level::instr, "JMP");
+        logf(log_level::instr, "JMP");
         JMP(tgt_adr(opcode));
         break;
     case 0x40:
-        log(log_level::instr, "RTI");
+        logf(log_level::instr, "RTI");
         RTI();
         break;
     case 0x60:
-        log(log_level::instr, "RTS");
+        logf(log_level::instr, "RTS");
         RTS();
         break;
     case 0xE6:
     case 0xF6:
     case 0xEE:
     case 0xFE:
-        log(log_level::instr, "INC");
+        logf(log_level::instr, "INC");
         INC(tgt_adr(opcode));
         break;
     case 0xC6:
     case 0xD6:
     case 0xCE:
     case 0xDE:
-        log(log_level::instr, "DEC");
+        logf(log_level::instr, "DEC");
         DEC(tgt_adr(opcode));
         break;
     case 0xE8:
-        log(log_level::instr, "INX");
+        logf(log_level::instr, "INX");
         INX();
         break;
     case 0xC8:
-        log(log_level::instr, "INY");
+        logf(log_level::instr, "INY");
         INY();
         break;
     case 0x48:
-        log(log_level::instr, "PHA");
+        logf(log_level::instr, "PHA");
         PHA();
         break;
     case 0x68:
-        log(log_level::instr, "PLA");
+        logf(log_level::instr, "PLA");
         PLA();
         break;
     case 0xAA:
-        log(log_level::instr, "TAX");
+        logf(log_level::instr, "TAX");
         TAX();
         break;
     case 0x8A:
-        log(log_level::instr, "TXA");
+        logf(log_level::instr, "TXA");
         TXA();
         break;
     case 0xA8:
-        log(log_level::instr, "TAY");
+        logf(log_level::instr, "TAY");
         TAY();
         break;
     case 0x98:
-        log(log_level::instr, "TYA");
+        logf(log_level::instr, "TYA");
         TYA();
         break;
     case 0x9A:
-        log(log_level::instr, "TXS");
+        logf(log_level::instr, "TXS");
         TXS();
         break;
     case 0xCA:
-        log(log_level::instr, "DEX");
+        logf(log_level::instr, "DEX");
         DEX();
         break;
     case 0x88:
-        log(log_level::instr, "DEY");
+        logf(log_level::instr, "DEY");
         DEY();
         break;
 
     case 0x38:
-        log(log_level::instr, "SEC");
+        logf(log_level::instr, "SEC");
         SEC();
         break;
     case 0x78:
-        log(log_level::instr, "SEI");
+        logf(log_level::instr, "SEI");
         SEI();
         break;
     case 0x18:
-        log(log_level::instr, "CLC");
+        logf(log_level::instr, "CLC");
         CLC();
         break;
     case 0xD8:
-        log(log_level::instr, "CLD");
+        logf(log_level::instr, "CLD");
         CLD();
         break;
     case 0x08:
-        log(log_level::instr, "PHP");
+        logf(log_level::instr, "PHP");
         PHP();
         break;
     case 0x00:
-        log(log_level::instr, "BRK");
+        logf(log_level::instr, "BRK");
         BRK();
         break;
     default:
-        log(log_level::error, "Unrecognized instruction %#04x\n", opcode);
+        logf(log_level::error, "Unrecognized instruction %#04x\n", opcode);
         faulted = true;
         break;
     }
-    log(log_level::instr, "\n");
+    logf(log_level::instr, "\n");
 }
 
 uint16_t core6502::zero(uint8_t adr) { return adr; }
@@ -807,27 +808,27 @@ void core6502::compare(uint8_t reg, uint8_t val) {
 
 void core6502::set_accumulator(uint8_t val) {
     accumulator = val;
-    log(log_level::instr, "\tA=%02x", accumulator);
+    logf(log_level::instr, "\tA=%02x", accumulator);
 }
 
 void core6502::set_x(uint8_t val) {
     x = val;
-    log(log_level::instr, "\tx=%02x", x);
+    logf(log_level::instr, "\tx=%02x", x);
 }
 
 void core6502::set_y(uint8_t val) {
     y = val;
-    log(log_level::instr, "\ty=%02x", y);
+    logf(log_level::instr, "\ty=%02x", y);
 }
 
 void core6502::set_sp(uint8_t val) {
     sp = val;
-    log(log_level::instr, "\tsp=%02x", sp);
+    logf(log_level::instr, "\tsp=%02x", sp);
 }
 
 void core6502::set_pp(uint16_t new_pp) {
     pp = new_pp;
-    log(log_level::instr, "\tpp=%04x", pp);
+    logf(log_level::instr, "\tpp=%04x", pp);
 }
 
 void core6502::BIT(uint8_t val) {

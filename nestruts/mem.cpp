@@ -9,7 +9,7 @@ memory_bus::memory_bus(std::shared_ptr<picture_processing_unit> p,
 void memory_bus::write(uint16_t adr, uint8_t val) {
     // RAM
     if (adr < 0x2000) {
-        log(log_level::debug, "\twrite RAM %#06x=%#04x", adr, val);
+        logf(log_level::debug, "\twrite RAM %#06x=%#04x", adr, val);
         uint16_t mod_adr = adr % 0x800;
         ram[mod_adr] = val;
     }
@@ -24,13 +24,13 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
             ppu->set_PPUMASK(val);
             break;
         case 0x2:
-            log(log_level::error, "unimplemented ppu write: %d\n", ppu_reg);
+            logf(log_level::error, "unimplemented ppu write: %d\n", ppu_reg);
             break;
         case 0x3:
             ppu->set_OAMADDR(val);
             break;
         case 0x4:
-            log(log_level::error, "unimplemented ppu write: %d\n", ppu_reg);
+            logf(log_level::error, "unimplemented ppu write: %d\n", ppu_reg);
             break;
         case 0x5:
             ppu->write_PPUSCROLL(val);
@@ -53,16 +53,17 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
             ppu->dma_write(i, ram[static_cast<size_t>(offs) + i]);
         }
     } else if (adr == 0x4016) {
-        log(log_level::debug, "Unimplemented write to 0x4016");
+        logf(log_level::debug, "Unimplemented write to 0x4016");
     } else if (adr == 0x4017) {
-        log(log_level::debug, "\tWrite APU frame counter");
+        logf(log_level::debug, "\tWrite APU frame counter");
         apu->set_frame_counter(val);
     } else if ((adr >= 0x4000 && adr <= 0x4013) || adr == 0x4015) {
-        log(log_level::debug, "\tWriting to unimplemented APU: %#6x\n", adr);
+        logf(log_level::debug, "\tWriting to unimplemented APU: %#6x\n", adr);
     } else if (adr >= 0x8000) {
-        log(log_level::error, "\tWarning: trying to write to ROM: %#6x\n", adr);
+        logf(log_level::error, "\tWarning: trying to write to ROM: %#6x\n",
+             adr);
     } else {
-        log(log_level::error, "\tUnsupported bus write to: %#6x\n", adr);
+        logf(log_level::error, "\tUnsupported bus write to: %#6x\n", adr);
     }
 }
 
@@ -70,7 +71,7 @@ uint8_t memory_bus::read(uint16_t adr) {
     // RAM
     if (adr < 0x2000) {
         uint16_t mod_adr = adr % 0x800;
-        log(log_level::debug, "\tread RAM %#06x=%#04x", adr, ram[mod_adr]);
+        logf(log_level::debug, "\tread RAM %#06x=%#04x", adr, ram[mod_adr]);
         return ram[mod_adr];
     }
     // PPU
@@ -80,14 +81,14 @@ uint8_t memory_bus::read(uint16_t adr) {
         case 0x2:
             return ppu->read_PPUSTATUS();
         default:
-            log(log_level::error, "Unsupported ppu read\n");
+            logf(log_level::error, "Unsupported ppu read\n");
             return 0;
         }
     } else if (adr == 0x4015) {
         return apu->read_status();
     } else if (adr == 0x4016 || adr == 0x4017) {
-        log(log_level::debug,
-            "\t Reading from unimplemented controller: %#6x\n", adr);
+        logf(log_level::debug,
+             "\t Reading from unimplemented controller: %#6x\n", adr);
         // Assume 0 is ok to return.
         return 0;
     }
@@ -97,16 +98,16 @@ uint8_t memory_bus::read(uint16_t adr) {
         uint16_t mod_adr = adr - 0x8000;
         return rom[mod_adr];
     } else {
-        log(log_level::error, "\tUnsupported read : %#6x\n", adr);
+        logf(log_level::error, "\tUnsupported read : %#6x\n", adr);
         return 0;
     }
 }
 
 void memory_bus::load_rom(uint16_t adr, uint8_t val) {
     if (adr == 0xFFFC) {
-        log(log_level::debug, "Writing reset vector low %#04x\n", val);
+        logf(log_level::debug, "Writing reset vector low %#04x\n", val);
     } else if (adr == 0xFFFD) {
-        log(log_level::debug, "Writing reset vector high %#04x\n", val);
+        logf(log_level::debug, "Writing reset vector high %#04x\n", val);
     }
     // Remove base address
     uint16_t mod_adr = adr - 0x8000;

@@ -12,7 +12,7 @@ enum class log_level {
 inline log_level current_log_level = log_level::debug;
 
 template<typename... Args>
-void log(log_level level, Args... args)
+void logf(log_level level, Args... args)
 {
 	if (level < current_log_level)
 	{

@@ -10,9 +10,9 @@ void audio_processing_unit::cycle() { --cycles_til_irq; }
 
 void audio_processing_unit::set_frame_counter(uint8_t val) {
     frame_counter_mode = val & frame_counter_mode_bit;
-    log(log_level::debug, " frame_counter_mode=%i", frame_counter_mode);
+    logf(log_level::debug, " frame_counter_mode=%i", frame_counter_mode);
     inhibit_irq = val & inhibit_irq_bit;
-    log(log_level::debug, " inhibit_irq=%i", inhibit_irq);
+    logf(log_level::debug, " inhibit_irq=%i", inhibit_irq);
 }
 
 uint8_t audio_processing_unit::read_status() {
