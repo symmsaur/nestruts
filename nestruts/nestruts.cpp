@@ -66,7 +66,7 @@ load_rom(std::string filename) {
     return {std::move(ppu), std::move(bus), std::move(apu)};
 }
 
-int test_game(std::string const& rom_filename) {
+int test_game(std::string const &rom_filename) {
     auto [ppu, bus, apu] = load_rom(rom_filename); // Hardcoded rom for now
     // The reset vector is always stored at this address in ROM.
     uint16_t reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
@@ -103,8 +103,7 @@ exit:
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2)
-    {
+    if (argc != 2) {
         std::cout << "Usage:\n\tnestruts [rom filename]\n";
         return 1;
     }
