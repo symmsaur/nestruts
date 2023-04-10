@@ -34,3 +34,23 @@ bool audio_processing_unit::IRQ() {
         return false;
     }
 }
+
+void audio_processing_unit::pulse1_dlcn(uint8_t val) {
+    log(log_level::debug, "Set pulse1_dlcn\n");
+    reg_pulse1_dlcn = val;
+}
+
+void audio_processing_unit::pulse1_sweep(uint8_t val) {
+    log(log_level::debug, "Set pulse1_sweep\n");
+    reg_pulse1_sweep = val;
+}
+
+void audio_processing_unit::pulse1_timer_low(uint8_t val) {
+    log(log_level::debug, "Set pulse1_timer_low\n");
+    reg_pulse1_timer_low = val;
+}
+
+void audio_processing_unit::pulse1_length_timer(uint8_t val) {
+    log(log_level::debug, "Set pulse1_length_timer\n");
+    reg_pulse1_length_timer = val;
+}

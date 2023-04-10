@@ -42,6 +42,14 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
             ppu->write_PPUDATA(val);
             break;
         }
+    } else if (adr == 0x4000) {
+        apu->pulse1_dlcn(val);
+    } else if (adr == 0x4001) {
+        apu->pulse1_sweep(val);
+    } else if (adr == 0x4002) {
+        apu->pulse1_timer_low(val);
+    } else if (adr == 0x4003) {
+        apu->pulse1_length_timer(val);
     }
     // APU // IO
     else if (adr == 0x4014) {
