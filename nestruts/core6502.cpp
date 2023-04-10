@@ -38,7 +38,7 @@ std::ostream &operator<<(std::ostream &stream, state s) {
 core6502::core6502(std::unique_ptr<memory_bus> bus,
                    std::function<bool()> irq_func)
     : bus{std::move(bus)}, irq_func{irq_func}, sp{0xff} {
-    log(log_level::debug, "\nCreated core6502\n");
+    log(log_level::debug, "Created core6502\n");
 }
 
 void core6502::cycle() {
@@ -638,7 +638,6 @@ void core6502::execute() {
         break;
     default:
         logf(log_level::error, "Unrecognized instruction %#04x\n", opcode);
-        log(log_level::error, "{}\n", dump_state());
         faulted = true;
         break;
     }

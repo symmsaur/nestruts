@@ -49,7 +49,7 @@ load_rom(std::string filename) {
         if (value < 0)
             throw std::runtime_error("failed reading file\n");
         if (i % 0x1000 == 0)
-            printf("loaded: %#06x\n", i);
+            logf(log_level::debug, "loaded: %#06x\n", i);
         uint8_t val8 = (uint8_t)value;
         bus->load_rom(static_cast<uint16_t>(i), val8);
     }
@@ -62,33 +62,43 @@ load_rom(std::string filename) {
             throw std::runtime_error("failed reading file\n");
         ppu->load_rom(static_cast<uint16_t>(i), static_cast<uint8_t>(value));
     }
-    printf("finished loading\n");
+    log(log_level::info, "Finished loading\n");
     fclose(rom);
     return {std::move(ppu), std::move(bus), std::move(apu)};
 }
 
-int test_game(std::string const &rom_filename) {
+int run_game(std::string const &rom_filename) {
+    int status{0};
     auto [ppu, bus, apu] = load_rom(rom_filename); // Hardcoded rom for now
     // The reset vector is always stored at this address in ROM.
-    uint16_t reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
+    uint16_t const reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
     auto cpu = std::make_unique<core6502>(std::move(bus),
                                           [apu]() { return apu->IRQ(); });
     cpu->setpp(reset_vector);
-    current_log_level = log_level::info;
     constexpr int cycles_per_frame{30000}; // Actual NTSC: 29780.5
     // Warm up for one frame (enough?)
     for (int i{0}; i < cycles_per_frame; ++i) {
-        cpu->cycle();
+        if (!cpu->is_faulted()) {
+            cpu->cycle();
+        } else {
+            log(log_level::error, "CPU faulted:\n{}\n", cpu->dump_state());
+            status = 1;
+            break;
+        }
     }
-
+    log(log_level::info, "Warmup finished\n");
     while (true) {
         cpu->nmi();
         ppu->nmi();
-        for (int i{0}; i < cycles_per_frame; ++i) {
+        for (int i{0}; i < cycles_per_frame && !cpu->is_faulted(); ++i) {
             cpu->cycle();
-        }
-        if (cpu->is_faulted()) {
-            log(log_level::error, "CPU faulted:\n{}", cpu->dump_state());
+            if (i % 2 == 0)
+                apu->cycle();
+            if (cpu->is_faulted()) {
+                log(log_level::error, "CPU faulted:\n{}\n", cpu->dump_state());
+                status = 1;
+                break;
+            }
         }
         ppu->draw_debug();
         // TODO: wait real time
@@ -103,15 +113,14 @@ int test_game(std::string const &rom_filename) {
         }
     }
 exit:
-    return 0;
+    return status;
 }
 
 int main(int argc, char *argv[]) {
+    current_log_level = log_level::info;
     if (argc != 2) {
         std::cout << "Usage:\n\tnestruts [rom filename]\n";
         return 1;
     }
-    test_game(argv[1]);
-
-    return 0;
+    return run_game(argv[1]);
 }
