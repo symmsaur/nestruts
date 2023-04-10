@@ -7,7 +7,6 @@
 #include <ostream>
 
 struct state {
-    bool nmi_low{};
     uint8_t status{};
     uint8_t accumulator{};
     uint8_t x{};
@@ -23,8 +22,7 @@ template <> struct fmt::formatter<state> : fmt::ostream_formatter {};
 
 class core6502 final {
   public:
-    core6502(std::unique_ptr<memory_bus> bus, std::function<bool()> nmi_func,
-             std::function<bool()> irq_func);
+    core6502(std::unique_ptr<memory_bus> bus, std::function<bool()> irq_func);
     void cycle();
     void interrupt();
     void nmi();
@@ -41,9 +39,7 @@ class core6502 final {
     const uint16_t stack_offs{0x100};
 
     std::unique_ptr<memory_bus> const bus{};
-    std::function<bool()> const nmi_func{};
     std::function<bool()> const irq_func{};
-    bool nmi_low{};
 
     // status register
     uint8_t status{};

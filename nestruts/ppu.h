@@ -8,7 +8,6 @@ class picture_processing_unit {
   public:
     picture_processing_unit();
     void load_rom(uint16_t adr, uint8_t val);
-    void cycle();
 
     uint8_t read_PPUSTATUS();
 
@@ -21,15 +20,16 @@ class picture_processing_unit {
 
     void dma_write(uint8_t i, uint8_t val);
 
-    // Should the NMI trigger
-    bool NMI();
+    // Set NMI occured state
+    void nmi();
+
+    void draw_debug();
 
   private:
     void draw_tiles(uint16_t base_offset, int base_x, int base_y);
     void draw_tile(int base_x, int base_y, uint16_t tile_index);
     void draw_nametable();
     void draw_sprites();
-    void draw_debug();
     // 8 K of CHR ROM
     std::array<uint8_t, 0x2000> rom{};
     // 2 K of RAM

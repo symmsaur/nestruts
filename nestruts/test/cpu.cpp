@@ -7,8 +7,7 @@ TEST_CASE("LDA Immediate", "[instruction]") {
     auto m = std::make_unique<memory_bus>(nullptr, nullptr);
     m->write(0x0000, 0xA9); // LDA immediate
     m->write(0x0001, 0x11); // value
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle();
     REQUIRE(cpu->get_acc() == 0x11);
@@ -20,8 +19,7 @@ TEST_CASE("LDA Absolute", "[instruction]") {
     m->write(0x0001, 0x34); // addr low
     m->write(0x0002, 0x12); // addr high
     m->write(0x1234, 0xAB); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle();
     REQUIRE(cpu->get_acc() == 0xAB);
@@ -35,8 +33,7 @@ TEST_CASE("LDA X-Indexed Absolute", "[instruction]") {
     m->write(0x0003, 0x34); // addr low
     m->write(0x0004, 0x12); // addr high
     m->write(0x1244, 0xCD); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDX 0x10
     cpu->cycle(); // LDA
@@ -51,8 +48,7 @@ TEST_CASE("LDA Y-Indexed Absolute", "[instruction]") {
     m->write(0x0003, 0x34); // addr low
     m->write(0x0004, 0x12); // addr high
     m->write(0x1244, 0xCE); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDX 0x10
     cpu->cycle(); // LDA
@@ -64,8 +60,7 @@ TEST_CASE("LDA Zero Page", "[instruction]") {
     m->write(0x0000, 0xA5); // LDA Zero Page
     m->write(0x0001, 0x44); // offset
     m->write(0x0044, 0xBA); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDA
     REQUIRE(cpu->get_acc() == 0xBA);
@@ -78,8 +73,7 @@ TEST_CASE("LDA X-Indexed Zero Page", "[instruction]") {
     m->write(0x0002, 0xB5); // LDA X-Indexed Zero Page
     m->write(0x0003, 0x44); // offset
     m->write(0x0055, 0xCB); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDX
     cpu->cycle(); // LDA
@@ -95,8 +89,7 @@ TEST_CASE("LDA X-Indexed Zero Page Indirect", "[instruction]") {
     m->write(0x0043, 0xAB); // address low
     m->write(0x0044, 0x12); // address high
     m->write(0x12AB, 0x17); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDX
     cpu->cycle(); // LDA
@@ -112,8 +105,7 @@ TEST_CASE("LDA Zero Page Indirect Y-Indexed", "[instruction]") {
     m->write(0x0020, 0xFF); // addr low (added with Y)
     m->write(0x0021, 0x11); // addr high
     m->write(0x1201, 0x21); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDY
     cpu->cycle(); // LDA
@@ -127,8 +119,7 @@ TEST_CASE("LDX Y-Indexed Zero Page", "[instruction]") {
     m->write(0x0002, 0xB6); // LDX Y-Indexed Zero Page
     m->write(0x0003, 0x31); // offset
     m->write(0x0041, 0x19); // value to read
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDY
     cpu->cycle(); // LDX
@@ -141,8 +132,7 @@ TEST_CASE("ADC Immediate", "[instruction]") {
     m->write(0x0001, 0x11); // value
     m->write(0x0002, 0x69); // ADC immediate
     m->write(0x0003, 0x22); // value
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle();
     cpu->cycle();
@@ -157,8 +147,7 @@ TEST_CASE("ADC Absolute", "[instruction]") {
     m->write(0x0003, 0x34); // low adr
     m->write(0x0004, 0x12); // high adr
     m->write(0x1234, 0x09); // value
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle();
     cpu->cycle();
@@ -170,8 +159,7 @@ TEST_CASE("PHP", "[instruction]") {
     m->write(0x0000, 0x38); // SEC
     m->write(0x0001, 0x08); // PHP
     m->write(0x0002, 0x68); // PLA
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle();
     auto expected_state = cpu->dump_state();
@@ -194,8 +182,7 @@ TEST_CASE("AND Immediate", "[instruction]") {
     m->write(0x0005, 0x81); // value
     m->write(0x0006, 0x29); // AND Immediate
     m->write(0x0007, 0x82); // value
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     cpu->cycle(); // LDA 0x11
     {
@@ -227,8 +214,7 @@ TEST_CASE("JMP Indirect", "[instruction]") {
     m->write(0x0002, 0x12); // Address high
     m->write(0x1234, 0x02); // Jump address low
     m->write(0x1235, 0x10); // Jump address high
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     auto expected_state = cpu->dump_state();
     expected_state.pp = 0x1002;
@@ -245,8 +231,7 @@ TEST_CASE("JMP Indirect Wrapping", "[instruction]") {
     m->write(0x12FF, 0x03); // Jump address low
     // We don't go to 0x1300 next!
     m->write(0x1200, 0x11); // Jump address high
-    auto cpu = std::make_unique<core6502>(
-        std::move(m), [] { return false; }, [] { return false; });
+    auto cpu = std::make_unique<core6502>(std::move(m), [] { return false; });
     cpu->setpp(0x0000);
     auto expected_state = cpu->dump_state();
     expected_state.pp = 0x1103;

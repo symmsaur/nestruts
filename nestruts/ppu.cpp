@@ -10,40 +10,6 @@ void picture_processing_unit::load_rom(uint16_t adr, uint8_t val) {
     rom.at(adr) = val;
 }
 
-void picture_processing_unit::cycle() {
-    if (warmup) {
-        --warmup;
-        if (!warmup) {
-            draw_debug();
-            logf(log_level::debug, "warmup done\n");
-            draw = 1000000;
-        }
-        if ((warmup % 1000) == 0) {
-            logf(log_level::debug, "warmup %i cycles left\n", warmup);
-        }
-        return;
-    }
-    if (draw) {
-        --draw;
-        if (!draw) {
-            vblank = 100000;
-            logf(log_level::debug, "draw -> vblank\n");
-            NMI_occured = true;
-        }
-        return;
-    }
-    if (vblank) {
-        --vblank;
-        if (!vblank) {
-            draw_debug();
-            NMI_occured = false;
-            logf(log_level::debug, "vblank -> draw\n");
-            draw = 1000000;
-        }
-        return;
-    }
-}
-
 void picture_processing_unit::draw_tiles(uint16_t base_tile_index, int base_x,
                                          int base_y) {
     for (auto i = 0; i < 16; i++) {
@@ -210,10 +176,4 @@ void picture_processing_unit::dma_write(uint8_t i, uint8_t val) {
     oam[i] = val;
 }
 
-bool picture_processing_unit::NMI() {
-    if (NMI_occured && PPUCTRL & 0x80) {
-        return true;
-    } else {
-        return false;
-    }
-}
+void picture_processing_unit::nmi() { NMI_occured = true; }

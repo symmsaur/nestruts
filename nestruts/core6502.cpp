@@ -14,7 +14,6 @@ constexpr uint8_t negative_flag = 1 << 7;
 
 std::ostream &operator<<(std::ostream &stream, state s) {
     stream << "State {\n";
-    stream << "  nmi_low: " << s.nmi_low << "\n";
 
     stream << "  status: ";
     stream << (s.status & negative_flag ? "N" : "-");
@@ -37,9 +36,8 @@ std::ostream &operator<<(std::ostream &stream, state s) {
 }
 
 core6502::core6502(std::unique_ptr<memory_bus> bus,
-                   std::function<bool()> nmi_func,
                    std::function<bool()> irq_func)
-    : bus{std::move(bus)}, nmi_func{nmi_func}, irq_func{irq_func}, sp{0xff} {
+    : bus{std::move(bus)}, irq_func{irq_func}, sp{0xff} {
     log(log_level::debug, "\nCreated core6502\n");
 }
 
@@ -49,14 +47,6 @@ void core6502::cycle() {
 }
 
 void core6502::interrupt() {
-    // Only trigger on transition of nmi
-    if (nmi_func() && !nmi_low) {
-        nmi_low = true;
-        nmi();
-    } else if (!nmi_func()) {
-        // reset flip flop
-        nmi_low = false;
-    }
     if (irq_func() && !(status & interrupt_disable_flag)) {
         irq();
     }
@@ -93,7 +83,6 @@ uint8_t core6502::get_acc() { return accumulator; }
 
 state core6502::dump_state() {
     state s{};
-    s.nmi_low = nmi_low;
     s.status = status;
     s.accumulator = accumulator;
     s.x = x;

@@ -1,6 +1,7 @@
 // nestruts.cpp : Defines the entry point for the console application.
 //
 
+#include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -70,31 +71,34 @@ int test_game(std::string const &rom_filename) {
     auto [ppu, bus, apu] = load_rom(rom_filename); // Hardcoded rom for now
     // The reset vector is always stored at this address in ROM.
     uint16_t reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
-    auto cpu = std::make_unique<core6502>(
-        std::move(bus), [ppu]() { return ppu->NMI(); },
-        [apu]() { return apu->IRQ(); });
+    auto cpu = std::make_unique<core6502>(std::move(bus),
+                                          [apu]() { return apu->IRQ(); });
     cpu->setpp(reset_vector);
     current_log_level = log_level::info;
-    uint64_t cycles{};
+    constexpr int cycles_per_frame{30000}; // Actual NTSC: 29780.5
+    // Warm up for one frame (enough?)
+    for (int i{0}; i < cycles_per_frame; ++i) {
+        cpu->cycle();
+    }
+
     while (true) {
-        ++cycles;
-        if (!cpu->is_faulted()) {
+        cpu->nmi();
+        ppu->nmi();
+        for (int i{0}; i < cycles_per_frame; ++i) {
             cpu->cycle();
-            ppu->cycle();
-            apu->cycle();
-            if (cycles % 100000 == 0) {
-                logf(log_level::info, ".");
-            }
         }
-        if (cycles % 1000 == 0) {
-            SDL_Event e;
-            while (SDL_PollEvent(&e)) {
-                if (e.type == SDL_QUIT) {
-                    goto exit;
-                }
-                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
-                    current_log_level = log_level::debug;
-                }
+        if (cpu->is_faulted()) {
+            log(log_level::error, "CPU faulted:\n{}", cpu->dump_state());
+        }
+        ppu->draw_debug();
+        // TODO: wait real time
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                goto exit;
+            }
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
+                current_log_level = log_level::debug;
             }
         }
     }
