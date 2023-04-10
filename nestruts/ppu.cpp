@@ -1,10 +1,11 @@
 #include "ppu.h"
 
 #include <cassert>
+#include <cmath>
 
 #include "log.h"
 
-picture_processing_unit::picture_processing_unit() : warmup{10000} {}
+picture_processing_unit::picture_processing_unit() = default;
 
 void picture_processing_unit::load_rom(uint16_t adr, uint8_t val) {
     rom.at(adr) = val;
@@ -96,10 +97,10 @@ void picture_processing_unit::draw_debug() {
 
 uint8_t picture_processing_unit::read_PPUSTATUS() {
     logf(log_level::debug, "\tread PPUSTATUS");
-    auto PPUSTATUS = NMI_occured << 7;
+    auto PPUSTATUS = vblank_started << 7;
     PPUSCROLL_latch = false;
     PPUADDR_latch = false;
-    NMI_occured = false;
+    vblank_started = false;
     return PPUSTATUS;
 }
 
@@ -176,4 +177,9 @@ void picture_processing_unit::dma_write(uint8_t i, uint8_t val) {
     oam[i] = val;
 }
 
-void picture_processing_unit::nmi() { NMI_occured = true; }
+bool picture_processing_unit::vblank() {
+    vblank_started = true;
+    if (PPUCTRL & 0x80)
+        return true;
+    return false;
+}

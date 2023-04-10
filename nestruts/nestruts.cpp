@@ -88,8 +88,10 @@ int run_game(std::string const &rom_filename) {
     }
     log(log_level::info, "Warmup finished\n");
     while (true) {
-        cpu->nmi();
-        ppu->nmi();
+        if (ppu->vblank()) {
+            cpu->nmi();
+        }
+
         for (int i{0}; i < cycles_per_frame && !cpu->is_faulted(); ++i) {
             cpu->cycle();
             if (i % 2 == 0)

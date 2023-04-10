@@ -20,8 +20,8 @@ class picture_processing_unit {
 
     void dma_write(uint8_t i, uint8_t val);
 
-    // Set NMI occured state
-    void nmi();
+    // Set vblank status and return if NMI should fire.
+    bool vblank();
 
     void draw_debug();
 
@@ -47,13 +47,9 @@ class picture_processing_unit {
     uint8_t PPUSCROLL_Y = 0;
     bool PPUSCROLL_latch = false;
 
-    bool NMI_occured = false;
+    bool vblank_started = false;
 
     uint16_t PPUADDR = 0;
     bool PPUADDR_latch = false;
     uint8_t PPUDATA_buffer = 0;
-
-    int warmup = 0;
-    int vblank = 0;
-    int draw = 0;
 };
