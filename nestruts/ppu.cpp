@@ -178,8 +178,13 @@ void picture_processing_unit::dma_write(uint8_t i, uint8_t val) {
 }
 
 bool picture_processing_unit::vblank() {
+    log(log_level::debug, "vblank\n");
     vblank_started = true;
-    if (PPUCTRL & 0x80)
+    if (PPUCTRL & 0x80) {
+        // Should trigger nmi
+        log(log_level::debug, "nmi triggered\n");
         return true;
+    }
+    log(log_level::debug, "nmi suppressed\n");
     return false;
 }
