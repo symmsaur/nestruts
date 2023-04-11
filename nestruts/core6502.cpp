@@ -123,9 +123,10 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xC0:
     case 0x49:
     case 0xE9: {
-
         uint8_t arg = fetch();
         logf(log_level::instr, "#%02x", arg);
+        current_instruction.set_mode(adr_mode::immediate);
+        current_instruction.set_argument(arg);
         return arg;
     }
     case 0x30:
@@ -137,6 +138,8 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xF0: {
         uint8_t arg = fetch();
         logf(log_level::instr, "*%i", static_cast<int8_t>(arg));
+        current_instruction.set_mode(adr_mode::relative);
+        current_instruction.set_argument(arg);
         return arg;
     }
     case 0xA5:
@@ -153,6 +156,8 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xE5: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x", arg);
+        current_instruction.set_mode(adr_mode::zero_page);
+        current_instruction.set_argument(arg);
         return bus->read(zero(arg));
     }
     case 0xB5:
@@ -165,11 +170,15 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xF5: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,X", arg);
+        current_instruction.set_mode(adr_mode::x_indexed_zero_page);
+        current_instruction.set_argument(arg);
         return bus->read(zero_x(arg));
     }
     case 0xB6: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,Y", arg);
+        current_instruction.set_mode(adr_mode::y_indexed_zero_page);
+        current_instruction.set_argument(arg);
         return bus->read(zero_y(arg));
     }
     case 0xAD:
@@ -187,6 +196,8 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return bus->read(absolute(low_adr, high_adr));
     }
     case 0xBD:
@@ -200,6 +211,8 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::x_indexed_absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return bus->read(absolute_x(low_adr, high_adr));
     }
     case 0xB9:
@@ -213,6 +226,8 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,Y", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::y_indexed_absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return bus->read(absolute_y(low_adr, high_adr));
     }
     case 0xA1:
@@ -224,6 +239,9 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xE1: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
+        current_instruction.set_mode(
+            adr_mode::x_indexed_zero_page_indirect);
+        current_instruction.set_argument(arg);
         return bus->read(indirect_x(arg));
     }
     case 0xB1:
@@ -235,6 +253,9 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xF1: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
+        current_instruction.set_mode(
+            adr_mode::zero_page_indirect_y_indexed);
+        current_instruction.set_argument(arg);
         return bus->read(indirect_y(arg));
     }
     default:
@@ -258,6 +279,8 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x26: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x", arg);
+        current_instruction.set_mode(adr_mode::zero_page);
+        current_instruction.set_argument(arg);
         return zero(arg);
     }
     case 0x16:
@@ -271,6 +294,8 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x36: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,X", arg);
+        current_instruction.set_mode(adr_mode::x_indexed_zero_page);
+        current_instruction.set_argument(arg);
         return zero_x(arg);
     }
     case 0x0E:
@@ -287,6 +312,8 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return absolute(low_adr, high_adr);
     }
     case 0x1E:
@@ -299,28 +326,40 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::x_indexed_absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return absolute_x(low_adr, high_adr);
     }
     case 0x99: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, " $%02x%02x,Y", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::y_indexed_absolute);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return absolute_y(low_adr, high_adr);
     }
     case 0x81: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
+        current_instruction.set_mode(
+            adr_mode::x_indexed_zero_page_indirect);
+        current_instruction.set_argument(arg);
         return indirect_x(arg);
     }
     case 0x91: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
+        current_instruction.set_mode(
+            adr_mode::zero_page_indirect_y_indexed);
+        current_instruction.set_argument(arg);
         return indirect_y(arg);
     }
     case 0x6C: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "($%02x%02x)", high_adr, low_adr);
+        current_instruction.set_mode(adr_mode::absolute_indirect);
+        current_instruction.set_argument((high_adr << 8) + low_adr);
         return indirect(low_adr, high_adr);
     }
     default:
@@ -332,6 +371,8 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
 }
 
 void core6502::execute() {
+    current_instruction = {};
+    current_instruction.set_pp(pp);
     logf(log_level::instr, "%#06x: ", pp);
     uint8_t opcode = fetch();
     switch (opcode) {
@@ -344,6 +385,7 @@ void core6502::execute() {
     case 0xA1:
     case 0xB1:
         logf(log_level::instr, "LDA");
+        current_instruction.set_mnemonic("LDA");
         LDA(bus_val(opcode));
         break;
     case 0xA0:
@@ -352,6 +394,7 @@ void core6502::execute() {
     case 0xAC:
     case 0xBC:
         logf(log_level::instr, "LDY");
+        current_instruction.set_mnemonic("LDY");
         LDY(bus_val(opcode));
         break;
     case 0xA2:
@@ -360,6 +403,7 @@ void core6502::execute() {
     case 0xAE:
     case 0xBE:
         logf(log_level::instr, "LDX");
+        current_instruction.set_mnemonic("LDX");
         LDX(bus_val(opcode));
         break;
     case 0x69:
@@ -371,6 +415,7 @@ void core6502::execute() {
     case 0x61:
     case 0x71:
         logf(log_level::instr, "ADC");
+        current_instruction.set_mnemonic("ADC");
         ADC(bus_val(opcode));
         break;
     case 0xE9:
@@ -382,6 +427,7 @@ void core6502::execute() {
     case 0xE1:
     case 0xF1:
         logf(log_level::instr, "SBC");
+        current_instruction.set_mnemonic("SBC");
         SBC(bus_val(opcode));
         break;
     case 0x29:
@@ -393,6 +439,7 @@ void core6502::execute() {
     case 0x21:
     case 0x31:
         logf(log_level::instr, "AND");
+        current_instruction.set_mnemonic("AND");
         AND(bus_val(opcode));
         break;
     case 0x09:
@@ -404,6 +451,7 @@ void core6502::execute() {
     case 0x01:
     case 0x11:
         logf(log_level::instr, "ORA");
+        current_instruction.set_mnemonic("ORA");
         ORA(bus_val(opcode));
         break;
     case 0x49:
@@ -415,10 +463,12 @@ void core6502::execute() {
     case 0x41:
     case 0x51:
         logf(log_level::instr, "EOR");
+        current_instruction.set_mnemonic("EOR");
         EOR(bus_val(opcode));
         break;
     case 0x0A:
         logf(log_level::instr, "ASL");
+        current_instruction.set_mnemonic("ASL");
         ASL();
         break;
     case 0xC9:
@@ -430,23 +480,27 @@ void core6502::execute() {
     case 0xC1:
     case 0xD1:
         logf(log_level::instr, "CMP");
+        current_instruction.set_mnemonic("CMP");
         CMP(bus_val(opcode));
         break;
     case 0xE0:
     case 0xE4:
     case 0xEC:
         logf(log_level::instr, "CPX");
+        current_instruction.set_mnemonic("CPX");
         CPX(bus_val(opcode));
         break;
     case 0xC0:
     case 0xC4:
     case 0xCC:
         logf(log_level::instr, "CPY");
+        current_instruction.set_mnemonic("CPY");
         CPY(bus_val(opcode));
         break;
     case 0x24:
     case 0x2C:
         logf(log_level::instr, "BIT");
+        current_instruction.set_mnemonic("BIT");
         BIT(bus_val(opcode));
         break;
     case 0x06:
@@ -458,14 +512,17 @@ void core6502::execute() {
     case 0x4E:
     case 0x5E:
         logf(log_level::instr, "ASL");
+        current_instruction.set_mnemonic("ASL");
         ASL(tgt_adr(opcode));
         break;
     case 0x4A:
         logf(log_level::instr, "LSR");
+        current_instruction.set_mnemonic("LSR");
         LSR();
         break;
     case 0x2A:
         logf(log_level::instr, "ROL");
+        current_instruction.set_mnemonic("ROL");
         ROL();
         break;
     case 0x26:
@@ -473,10 +530,12 @@ void core6502::execute() {
     case 0x2E:
     case 0x3E:
         logf(log_level::instr, "ROL");
+        current_instruction.set_mnemonic("ROL");
         ROL(tgt_adr(opcode));
         break;
     case 0x6A:
         logf(log_level::instr, "ROR");
+        current_instruction.set_mnemonic("ROR");
         ROR();
         break;
     case 0x66:
@@ -484,6 +543,7 @@ void core6502::execute() {
     case 0x6E:
     case 0x7E:
         logf(log_level::instr, "ROR");
+        current_instruction.set_mnemonic("ROR");
         ROR(tgt_adr(opcode));
         break;
     case 0x85:
@@ -494,63 +554,77 @@ void core6502::execute() {
     case 0x81:
     case 0x91:
         logf(log_level::instr, "STA");
+        current_instruction.set_mnemonic("STA");
         STA(tgt_adr(opcode));
         break;
     case 0x86:
     case 0x96:
     case 0x8E:
         logf(log_level::instr, "STX");
+        current_instruction.set_mnemonic("STX");
         STX(tgt_adr(opcode));
         break;
     case 0x84:
     case 0x94:
     case 0x8C:
         logf(log_level::instr, "STY");
+        current_instruction.set_mnemonic("STY");
         STY(tgt_adr(opcode));
         break;
     case 0xF0:
         logf(log_level::instr, "BEQ");
+        current_instruction.set_mnemonic("BEQ");
         BEQ(bus_val(opcode));
         break;
     case 0x30:
         logf(log_level::instr, "BMI");
+        current_instruction.set_mnemonic("BMI");
         BMI(bus_val(opcode));
         break;
     case 0xD0:
         logf(log_level::instr, "BNE");
+        current_instruction.set_mnemonic("BNE");
         BNE(bus_val(opcode));
         break;
     case 0xB0:
         logf(log_level::instr, "BCS");
+        current_instruction.set_mnemonic("BCS");
         BCS(bus_val(opcode));
         break;
     case 0x90:
         logf(log_level::instr, "BCC");
+        current_instruction.set_mnemonic("BCC");
         BCC(bus_val(opcode));
         break;
     case 0x10:
         logf(log_level::instr, "BPL");
+        current_instruction.set_mnemonic("BPL");
         BPL(bus_val(opcode));
         break;
     case 0x50:
         logf(log_level::instr, "BVC");
+        current_instruction.set_mnemonic("BVC");
         BVC(bus_val(opcode));
         break;
     case 0x20:
         logf(log_level::instr, "JSR");
+        current_instruction.set_mnemonic("JSR");
         JSR(tgt_adr(opcode));
         break;
     case 0x4C:
     case 0x6C:
         logf(log_level::instr, "JMP");
+        current_instruction.set_mnemonic("JMP");
         JMP(tgt_adr(opcode));
         break;
     case 0x40:
         logf(log_level::instr, "RTI");
+        current_instruction.set_mnemonic("RTI");
         RTI();
         break;
     case 0x60:
         logf(log_level::instr, "RTS");
+        current_instruction.set_mnemonic("RTS");
         RTS();
         break;
     case 0xE6:
@@ -558,6 +632,7 @@ void core6502::execute() {
     case 0xEE:
     case 0xFE:
         logf(log_level::instr, "INC");
+        current_instruction.set_mnemonic("INC");
         INC(tgt_adr(opcode));
         break;
     case 0xC6:
@@ -565,75 +640,109 @@ void core6502::execute() {
     case 0xCE:
     case 0xDE:
         logf(log_level::instr, "DEC");
+        current_instruction.set_mnemonic("DEC");
         DEC(tgt_adr(opcode));
         break;
     case 0xE8:
         logf(log_level::instr, "INX");
+        current_instruction.set_mnemonic("INX");
+        current_instruction.set_mode(adr_mode::implied);
         INX();
         break;
     case 0xC8:
         logf(log_level::instr, "INY");
+        current_instruction.set_mnemonic("INY");
+        current_instruction.set_mode(adr_mode::implied);
         INY();
         break;
     case 0x48:
         logf(log_level::instr, "PHA");
+        current_instruction.set_mnemonic("PHA");
+        current_instruction.set_mode(adr_mode::implied);
         PHA();
         break;
     case 0x68:
         logf(log_level::instr, "PLA");
+        current_instruction.set_mnemonic("PLA");
+        current_instruction.set_mode(adr_mode::implied);
         PLA();
         break;
     case 0xAA:
         logf(log_level::instr, "TAX");
+        current_instruction.set_mnemonic("TAX");
+        current_instruction.set_mode(adr_mode::implied);
         TAX();
         break;
     case 0x8A:
         logf(log_level::instr, "TXA");
+        current_instruction.set_mnemonic("TXA");
+        current_instruction.set_mode(adr_mode::implied);
         TXA();
         break;
     case 0xA8:
         logf(log_level::instr, "TAY");
+        current_instruction.set_mnemonic("TAY");
+        current_instruction.set_mode(adr_mode::implied);
         TAY();
         break;
     case 0x98:
         logf(log_level::instr, "TYA");
+        current_instruction.set_mnemonic("TYA");
+        current_instruction.set_mode(adr_mode::implied);
         TYA();
         break;
     case 0x9A:
         logf(log_level::instr, "TXS");
+        current_instruction.set_mnemonic("TXS");
+        current_instruction.set_mode(adr_mode::implied);
         TXS();
         break;
     case 0xCA:
         logf(log_level::instr, "DEX");
+        current_instruction.set_mnemonic("DEX");
+        current_instruction.set_mode(adr_mode::implied);
         DEX();
         break;
     case 0x88:
         logf(log_level::instr, "DEY");
+        current_instruction.set_mnemonic("DEY");
+        current_instruction.set_mode(adr_mode::implied);
         DEY();
         break;
-
     case 0x38:
         logf(log_level::instr, "SEC");
+        current_instruction.set_mnemonic("SEC");
+        current_instruction.set_mode(adr_mode::implied);
         SEC();
         break;
     case 0x78:
         logf(log_level::instr, "SEI");
+        current_instruction.set_mnemonic("SEI");
+        current_instruction.set_mode(adr_mode::implied);
         SEI();
         break;
     case 0x18:
         logf(log_level::instr, "CLC");
+        current_instruction.set_mnemonic("CLC");
+        current_instruction.set_mode(adr_mode::implied);
         CLC();
         break;
     case 0xD8:
         logf(log_level::instr, "CLD");
+        current_instruction.set_mnemonic("CLD");
+        current_instruction.set_mode(adr_mode::implied);
         CLD();
         break;
     case 0x08:
         logf(log_level::instr, "PHP");
+        current_instruction.set_mnemonic("PHP");
+        current_instruction.set_mode(adr_mode::implied);
         PHP();
         break;
     case 0x00:
         logf(log_level::instr, "BRK");
+        current_instruction.set_mnemonic("BRK");
+        current_instruction.set_mode(adr_mode::implied);
         BRK();
         break;
     default:
@@ -642,6 +751,7 @@ void core6502::execute() {
         break;
     }
     logf(log_level::instr, "\n");
+    store.push(current_instruction);
 }
 
 uint16_t core6502::zero(uint8_t adr) { return adr; }

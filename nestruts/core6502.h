@@ -1,5 +1,6 @@
 #pragma once
 #include "fmt/ostream.h"
+#include "instruction_store.h"
 #include "mem.h"
 #include <cstdint>
 #include <functional>
@@ -47,7 +48,7 @@ class core6502 final {
     uint8_t accumulator{};
     // X register
     uint8_t x{};
-    // Y resgister
+    // Y register
     uint8_t y{};
     // stack register
     uint8_t sp{};
@@ -56,6 +57,9 @@ class core6502 final {
     bool faulted{};
 
     int cycles_alloc{};
+
+    instruction_info current_instruction{};
+    instruction_store store{};
 
     uint8_t fetch();
     void push(uint8_t val);

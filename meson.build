@@ -15,6 +15,7 @@ lib = library(
         'nestruts/audio_processing_unit.cpp',
         'nestruts/core6502.cpp',
         'nestruts/gfx.cpp',
+        'nestruts/instruction_store.cpp',
         'nestruts/mem.cpp',
         'nestruts/ppu.cpp',
     ],
