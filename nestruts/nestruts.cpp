@@ -5,35 +5,39 @@
 #include <cstdio>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
 #include "audio_processing_unit.h"
 #include "core6502.h"
 #include "log.h"
 #include "mem.h"
 
+using namespace std::literals;
+
 std::tuple<std::shared_ptr<picture_processing_unit>,
            std::unique_ptr<memory_bus>, std::shared_ptr<audio_processing_unit>>
 load_rom(std::string filename) {
     FILE *rom{std::fopen(filename.c_str(), "rb")};
     if (rom == nullptr) {
-        throw std::runtime_error("failed to open file");
+        throw std::runtime_error("Failed to open file '" + filename + "'.");
     }
     // read header
     auto const guard = std::array<uint8_t, 4>{'N', 'E', 'S', 0x1A};
     for (auto const c : guard) {
         auto value = fgetc(rom);
         if (value < 0)
-            throw std::runtime_error("failed to read file");
+            throw std::runtime_error("Failed to read file.");
         if (value != c)
-            throw std::runtime_error("unexpected rom file header guard");
+            throw std::runtime_error("Unexpected rom file header guard.");
     }
     auto const prg_rom_banks = fgetc(rom);
     if (prg_rom_banks < 0)
-        throw std::runtime_error("failed to read file");
+        throw std::runtime_error("Failed to read file.");
     auto const chr_rom_banks = fgetc(rom);
     if (chr_rom_banks < 0)
-        throw std::runtime_error("failed to read file");
+        throw std::runtime_error("Failed to read file.");
     // Skip rest of header
     fseek(rom, 16, 0);
     // load PRG ROM
@@ -47,7 +51,7 @@ load_rom(std::string filename) {
         }
         int value = fgetc(rom);
         if (value < 0)
-            throw std::runtime_error("failed reading file\n");
+            throw std::runtime_error("Failed reading file.");
         if (i % 0x1000 == 0)
             logf(log_level::debug, "loaded: %#06x\n", i);
         uint8_t val8 = (uint8_t)value;
@@ -55,11 +59,12 @@ load_rom(std::string filename) {
     }
     // Load CHR ROM
     if (chr_rom_banks != 1)
-        throw std::runtime_error("not implemented");
+        throw std::runtime_error(
+            "Not implemented reading multiple CHR ROM banks.");
     for (int i = 0; i < 0x2000; i++) {
         int value = fgetc(rom);
         if (value < 0)
-            throw std::runtime_error("failed reading file\n");
+            throw std::runtime_error("Failed reading file.");
         ppu->load_rom(static_cast<uint16_t>(i), static_cast<uint8_t>(value));
     }
     log(log_level::info, "Finished loading\n");
@@ -118,11 +123,24 @@ exit:
     return status;
 }
 
+void print_usage() { std::cout << "Usage:\n\tnestruts [-d] FILENAME\n"; }
+
 int main(int argc, char *argv[]) {
     current_log_level = log_level::info;
-    if (argc != 2) {
-        std::cout << "Usage:\n\tnestruts [rom filename]\n";
+    int consumed_args{0};
+    if (argc == 3 && "-d"sv == argv[1]) {
+        current_log_level = log_level::debug;
+        consumed_args++;
+    }
+    if (argc != consumed_args + 2) {
+        log(log_level::error, "Unexpected number of command line arguments.\n");
+        print_usage();
         return 1;
     }
-    return run_game(argv[1]);
+    try {
+        return run_game(argv[consumed_args + 1]);
+    } catch (std::runtime_error const &error) {
+        log(log_level::error, "Failed to run: {}\n", error.what());
+        print_usage();
+    }
 }
