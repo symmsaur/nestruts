@@ -128,6 +128,7 @@ class core6502 final {
     void PHA();
     void PLA();
     void PHP();
+    void PLP();
     void TAX();
     void TXA();
     void TAY();

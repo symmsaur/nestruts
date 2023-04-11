@@ -739,6 +739,12 @@ void core6502::execute() {
         current_instruction.set_mode(adr_mode::implied);
         PHP();
         break;
+    case 0x28:
+        logf(log_level::instr, "PLP");
+        current_instruction.set_mnemonic("PLP");
+        current_instruction.set_mode(adr_mode::implied);
+        PLP();
+        break;
     case 0x00:
         logf(log_level::instr, "BRK");
         current_instruction.set_mnemonic("BRK");
@@ -1045,6 +1051,8 @@ void core6502::PLA() {
 }
 
 void core6502::PHP() { push(status); }
+
+void core6502::PLP() { status = pop(); }
 
 void core6502::TAX() {
     set_x(accumulator);
