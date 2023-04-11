@@ -13,7 +13,7 @@ instruction_store::~instruction_store() {
             // Print nothing
             break;
         case adr_mode::accumulator:
-            fmt::print(file, "A");
+            fmt::print(file, " A");
             break;
         case adr_mode::immediate:
             fmt::print(file, " #{:02x}", instruction.argument());

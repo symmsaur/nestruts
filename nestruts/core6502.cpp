@@ -29,7 +29,7 @@ std::ostream &operator<<(std::ostream &stream, state s) {
     stream << "  x: " << static_cast<int>(s.x) << "\n";
     stream << "  y: " << static_cast<int>(s.y) << "\n";
     stream << "  sp: " << static_cast<int>(s.sp) << "\n";
-    stream << "  pp: " << s.pp << "\n";
+    stream << "  pp: $" << std::hex << s.pp << "\n";
     stream << "  faulted: " << s.faulted << "\n";
     stream << "}";
     return stream;
@@ -239,8 +239,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xE1: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
-        current_instruction.set_mode(
-            adr_mode::x_indexed_zero_page_indirect);
+        current_instruction.set_mode(adr_mode::x_indexed_zero_page_indirect);
         current_instruction.set_argument(arg);
         return bus->read(indirect_x(arg));
     }
@@ -253,8 +252,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xF1: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
-        current_instruction.set_mode(
-            adr_mode::zero_page_indirect_y_indexed);
+        current_instruction.set_mode(adr_mode::zero_page_indirect_y_indexed);
         current_instruction.set_argument(arg);
         return bus->read(indirect_y(arg));
     }
@@ -341,16 +339,14 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     case 0x81: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
-        current_instruction.set_mode(
-            adr_mode::x_indexed_zero_page_indirect);
+        current_instruction.set_mode(adr_mode::x_indexed_zero_page_indirect);
         current_instruction.set_argument(arg);
         return indirect_x(arg);
     }
     case 0x91: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
-        current_instruction.set_mode(
-            adr_mode::zero_page_indirect_y_indexed);
+        current_instruction.set_mode(adr_mode::zero_page_indirect_y_indexed);
         current_instruction.set_argument(arg);
         return indirect_y(arg);
     }
@@ -466,11 +462,6 @@ void core6502::execute() {
         current_instruction.set_mnemonic("EOR");
         EOR(bus_val(opcode));
         break;
-    case 0x0A:
-        logf(log_level::instr, "ASL");
-        current_instruction.set_mnemonic("ASL");
-        ASL();
-        break;
     case 0xC9:
     case 0xC5:
     case 0xD5:
@@ -503,6 +494,12 @@ void core6502::execute() {
         current_instruction.set_mnemonic("BIT");
         BIT(bus_val(opcode));
         break;
+    case 0x0A:
+        logf(log_level::instr, "ASL");
+        current_instruction.set_mnemonic("ASL");
+        current_instruction.set_mode(adr_mode::accumulator);
+        ASL();
+        break;
     case 0x06:
     case 0x16:
     case 0x0E:
@@ -518,11 +515,13 @@ void core6502::execute() {
     case 0x4A:
         logf(log_level::instr, "LSR");
         current_instruction.set_mnemonic("LSR");
+        current_instruction.set_mode(adr_mode::accumulator);
         LSR();
         break;
     case 0x2A:
         logf(log_level::instr, "ROL");
         current_instruction.set_mnemonic("ROL");
+        current_instruction.set_mode(adr_mode::accumulator);
         ROL();
         break;
     case 0x26:
@@ -536,6 +535,7 @@ void core6502::execute() {
     case 0x6A:
         logf(log_level::instr, "ROR");
         current_instruction.set_mnemonic("ROR");
+        current_instruction.set_mode(adr_mode::accumulator);
         ROR();
         break;
     case 0x66:
