@@ -46,7 +46,7 @@ instruction_store::~instruction_store() {
             fmt::print(file, " (${:02x}),Y", instruction.argument());
             break;
         case adr_mode::relative:
-            fmt::print(file, " *{:02x}", instruction.argument());
+            fmt::print(file, " *{:02x}", static_cast<int8_t>(instruction.argument()));
             break;
         }
         // Make it easier to tell subroutines apart
