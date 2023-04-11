@@ -7,7 +7,7 @@ instruction_store::~instruction_store() {
     FILE *file{fopen("disasm_dump", "w")};
     for (auto &instr : m_instructions) {
         auto const &instruction = instr.second;
-        fmt::print(file, "${:x}: {}", instruction.pp(), instruction.mnemonic());
+        fmt::print(file, "${:04x}: {}", instruction.pp(), instruction.mnemonic());
         switch (instruction.mode()) {
         case adr_mode::implied:
             // Print nothing
