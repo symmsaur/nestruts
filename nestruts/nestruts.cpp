@@ -104,24 +104,10 @@ int run_game(std::string const &rom_filename) {
         int64_t sleep_time_ms = initial_frame_timestamp_ms +
                                 frames * 1000 / 60 -
                                 static_cast<int64_t>(SDL_GetTicks64());
+        log(log_level::debug, "sleep time: {} ms\n", sleep_time_ms);
         if (sleep_time_ms > 0) {
             SDL_Delay(sleep_time_ms);
         }
-        if (ppu->vblank()) {
-            cpu->nmi();
-        }
-
-        for (int i{0}; i < cycles_per_frame && !cpu->is_faulted(); ++i) {
-            cpu->cycle();
-            if (i % 2 == 0)
-                apu->cycle();
-            if (cpu->is_faulted()) {
-                log(log_level::error, "CPU faulted:\n{}\n", cpu->dump_state());
-                status = 1;
-                break;
-            }
-        }
-        ppu->draw_debug();
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
@@ -150,6 +136,21 @@ int run_game(std::string const &rom_filename) {
             ctrl->down(button::start);
         if (keyboard_state[SDL_SCANCODE_LSHIFT])
             ctrl->down(button::select);
+        if (ppu->vblank()) {
+            cpu->nmi();
+        }
+
+        for (int i{0}; i < cycles_per_frame && !cpu->is_faulted(); ++i) {
+            cpu->cycle();
+            if (i % 2 == 0)
+                apu->cycle();
+            if (cpu->is_faulted()) {
+                log(log_level::error, "CPU faulted:\n{}\n", cpu->dump_state());
+                status = 1;
+                break;
+            }
+        }
+        ppu->draw_debug();
     }
 exit:
     return status;
