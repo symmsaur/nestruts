@@ -1,7 +1,8 @@
 #include "gfx.h"
+#include <SDL2/SDL.h>
 
 graphics::graphics() {
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
     window =
         SDL_CreateWindow("Nestruts", SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED, 1400, 900, SDL_WINDOW_SHOWN);

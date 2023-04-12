@@ -97,8 +97,16 @@ int run_game(std::string const &rom_filename) {
             break;
         }
     }
+    int64_t const initial_frame_timestamp_ms = SDL_GetTicks64();
     log(log_level::info, "Warmup finished\n");
-    while (true) {
+    for (int32_t frames{0};; ++frames) {
+        // Aim for 60 frames per second
+        int64_t sleep_time_ms = initial_frame_timestamp_ms +
+                                frames * 1000 / 60 -
+                                static_cast<int64_t>(SDL_GetTicks64());
+        if (sleep_time_ms > 0) {
+            SDL_Delay(sleep_time_ms);
+        }
         if (ppu->vblank()) {
             cpu->nmi();
         }
@@ -114,7 +122,6 @@ int run_game(std::string const &rom_filename) {
             }
         }
         ppu->draw_debug();
-        // TODO: wait real time
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
