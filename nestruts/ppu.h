@@ -27,7 +27,8 @@ class picture_processing_unit {
 
   private:
     void draw_tiles(uint16_t base_offset, int base_x, int base_y);
-    void draw_tile(int base_x, int base_y, uint16_t tile_index);
+    void draw_tile(int base_x, int base_y, uint16_t tile_index,
+                   bool flip_x = false, bool flip_y = false);
     void draw_nametable();
     void draw_sprites();
     // 8 K of CHR ROM

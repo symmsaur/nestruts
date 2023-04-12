@@ -23,8 +23,14 @@ void picture_processing_unit::draw_tiles(uint16_t base_tile_index, int base_x,
 }
 
 void picture_processing_unit::draw_tile(int base_x, int base_y,
-                                        uint16_t tile_index) {
-    auto offset = tile_index * 16;
+                                        uint16_t tile_index, bool flip_x,
+                                        bool flip_y) {
+    auto const offset = tile_index * 16;
+    auto const flip_func = [](auto const flip, auto const x) {
+        if (flip)
+            return 7 - x;
+        return x;
+    };
     for (auto y = 0; y < 8; y++) {
         // Two bit planes for the tile
         uint8_t low_bits = rom.at(offset + y);
@@ -34,7 +40,8 @@ void picture_processing_unit::draw_tile(int base_x, int base_y,
             auto val = (low_bits >> 7) + (high_bits >> 7) * 2;
             low_bits = low_bits << 1;
             high_bits = high_bits << 1;
-            gfx.draw_pixel(x + base_x, y + base_y, val);
+            gfx.draw_pixel(flip_func(flip_x, x) + base_x,
+                           flip_func(flip_y, y) + base_y, val);
         }
     }
 }
@@ -67,8 +74,7 @@ void picture_processing_unit::draw_sprites() {
     constexpr size_t sprite_pitch = 4;
     constexpr size_t y_offset = 0;
     constexpr size_t tile_index_offset = 1;
-    // TODO: Attributes are unused
-    // constexpr size_t attributes_offset = 2;
+    constexpr size_t attributes_offset = 2;
     constexpr size_t x_offset = 3;
     // Refactor this magical thing to get it to draw in the correct place
     constexpr auto base_x = 8 * 32 + 9 + 17 * 9;
@@ -76,10 +82,10 @@ void picture_processing_unit::draw_sprites() {
         // Sprites are offset by one in y.
         auto const y = oam.at(i * sprite_pitch + y_offset) + 1;
         auto const tile_index = oam.at(i * sprite_pitch + tile_index_offset);
-        // TODO: Attributes are unused
-        // auto const attributes = oam.at(i * sprite_pitch + attributes_offset);
+        auto const attributes = oam.at(i * sprite_pitch + attributes_offset);
         auto const x = oam.at(i * sprite_pitch + x_offset);
-        draw_tile(base_x + x, y, tile_index);
+        draw_tile(base_x + x, y, tile_index, attributes & (1 << 6),
+                  attributes & (1 << 7));
     }
 }
 
