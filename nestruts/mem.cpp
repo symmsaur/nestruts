@@ -1,10 +1,12 @@
 #include "mem.h"
 
 #include "log.h"
+#include <memory>
 
 memory_bus::memory_bus(std::shared_ptr<picture_processing_unit> p,
-                       std::shared_ptr<audio_processing_unit> a)
-    : ram{}, rom{}, ppu{std::move(p)}, apu{std::move(a)} {}
+                       std::shared_ptr<audio_processing_unit> a,
+                       std::shared_ptr<controller> c)
+    : ram{}, rom{}, ppu{std::move(p)}, apu{std::move(a)}, ctrl{std::move(c)} {}
 
 void memory_bus::write(uint16_t adr, uint8_t val) {
     // RAM
@@ -61,7 +63,7 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
             ppu->dma_write(i, ram[static_cast<size_t>(offs) + i]);
         }
     } else if (adr == 0x4016) {
-        logf(log_level::debug, "Unimplemented write to 0x4016");
+        ctrl->write(val);
     } else if (adr == 0x4017) {
         logf(log_level::debug, "\tWrite APU frame counter");
         apu->set_frame_counter(val);
@@ -94,7 +96,9 @@ uint8_t memory_bus::read(uint16_t adr) {
         }
     } else if (adr == 0x4015) {
         return apu->read_status();
-    } else if (adr == 0x4016 || adr == 0x4017) {
+    } else if (adr == 0x4016) {
+        return ctrl->read();
+    } else if (adr == 0x4017) {
         logf(log_level::debug,
              "\t Reading from unimplemented controller: %#6x\n", adr);
         // Assume 0 is ok to return.

@@ -4,12 +4,14 @@
 #include <memory>
 
 #include "audio_processing_unit.h"
+#include "controller.h"
 #include "ppu.h"
 
 class memory_bus final {
   public:
     memory_bus(std::shared_ptr<picture_processing_unit> ppu,
-               std::shared_ptr<audio_processing_unit> apu);
+               std::shared_ptr<audio_processing_unit> apu,
+               std::shared_ptr<controller> ctrl);
     void write(uint16_t adr, uint8_t val);
     uint8_t read(uint16_t adr);
     void load_rom(uint16_t adr, uint8_t val);
@@ -22,4 +24,5 @@ class memory_bus final {
 
     std::shared_ptr<picture_processing_unit> ppu;
     std::shared_ptr<audio_processing_unit> apu;
+    std::shared_ptr<controller> ctrl;
 };

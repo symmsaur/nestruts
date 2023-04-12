@@ -1,6 +1,8 @@
 // nestruts.cpp : Defines the entry point for the console application.
 //
 
+#include <SDL2/SDL_keyboard.h>
+#include <SDL2/SDL_scancode.h>
 #include <cmath>
 #include <cstdio>
 #include <iostream>
@@ -10,6 +12,7 @@
 #include <string_view>
 
 #include "audio_processing_unit.h"
+#include "controller.h"
 #include "core6502.h"
 #include "log.h"
 #include "mem.h"
@@ -17,7 +20,8 @@
 using namespace std::literals;
 
 std::tuple<std::shared_ptr<picture_processing_unit>,
-           std::unique_ptr<memory_bus>, std::shared_ptr<audio_processing_unit>>
+           std::unique_ptr<memory_bus>, std::shared_ptr<audio_processing_unit>,
+           std::shared_ptr<controller>>
 load_rom(std::string filename) {
     FILE *rom{std::fopen(filename.c_str(), "rb")};
     if (rom == nullptr) {
@@ -43,7 +47,8 @@ load_rom(std::string filename) {
     // load PRG ROM
     auto ppu = std::make_shared<picture_processing_unit>();
     auto apu = std::make_shared<audio_processing_unit>();
-    auto bus = std::make_unique<memory_bus>(ppu, apu);
+    auto ctrl = std::make_shared<controller>();
+    auto bus = std::make_unique<memory_bus>(ppu, apu, ctrl);
     for (int i = 0x8000; i <= 0xFFFF; i++) {
         if (prg_rom_banks == 1 && i == 0xC000) {
             // Mirror the single ROM bank twice.
@@ -69,12 +74,13 @@ load_rom(std::string filename) {
     }
     log(log_level::info, "Finished loading\n");
     fclose(rom);
-    return {std::move(ppu), std::move(bus), std::move(apu)};
+    return {std::move(ppu), std::move(bus), std::move(apu), std::move(ctrl)};
 }
 
 int run_game(std::string const &rom_filename) {
     int status{0};
-    auto [ppu, bus, apu] = load_rom(rom_filename); // Hardcoded rom for now
+    auto [ppu, bus, apu, ctrl] =
+        load_rom(rom_filename); // Hardcoded rom for now
     // The reset vector is always stored at this address in ROM.
     uint16_t const reset_vector = bus->read(0xFFFC) + (bus->read(0xFFFD) << 8);
     auto cpu = std::make_unique<core6502>(std::move(bus),
@@ -118,6 +124,25 @@ int run_game(std::string const &rom_filename) {
                 current_log_level = log_level::debug;
             }
         }
+        ctrl->clear();
+        int numkeys{};
+        auto keyboard_state = SDL_GetKeyboardState(&numkeys);
+        if (keyboard_state[SDL_SCANCODE_LEFT])
+            ctrl->down(button::left);
+        if (keyboard_state[SDL_SCANCODE_RIGHT])
+            ctrl->down(button::right);
+        if (keyboard_state[SDL_SCANCODE_UP])
+            ctrl->down(button::up);
+        if (keyboard_state[SDL_SCANCODE_DOWN])
+            ctrl->down(button::down);
+        if (keyboard_state[SDL_SCANCODE_Z])
+            ctrl->down(button::b);
+        if (keyboard_state[SDL_SCANCODE_X])
+            ctrl->down(button::a);
+        if (keyboard_state[SDL_SCANCODE_RETURN])
+            ctrl->down(button::start);
+        if (keyboard_state[SDL_SCANCODE_LSHIFT])
+            ctrl->down(button::select);
     }
 exit:
     return status;
