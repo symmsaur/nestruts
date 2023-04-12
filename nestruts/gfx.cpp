@@ -32,10 +32,11 @@ void graphics::draw_pixel(int nes_x, int nes_y, rgb color) {
     int fatness = 4;
     if (current_log_level == log_level::debug)
         fatness = 2;
+    auto const pixels = static_cast<uint32_t *>(surf->pixels);
+    auto const width = surf->pitch / sizeof(uint32_t);
     for (int x = nes_x * fatness; x < nes_x * fatness + fatness; x++) {
         for (int y = nes_y * fatness; y < nes_y * fatness + fatness; y++) {
-            *(static_cast<uint32_t *>(surf->pixels) + x +
-              y * surf->pitch / sizeof(uint32_t)) = color_argb;
+            *(pixels + x + y * width) = color_argb;
         }
     }
     SDL_UnlockSurface(surf);
