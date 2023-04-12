@@ -4,7 +4,7 @@
 #include "fmt/printf.h"
 #include <utility>
 
-enum class log_level { debug, instr, info, error };
+enum class log_level { trace, debug, instr, info, error };
 
 inline log_level current_log_level = log_level::debug;
 

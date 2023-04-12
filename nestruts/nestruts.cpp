@@ -150,7 +150,11 @@ int run_game(std::string const &rom_filename) {
                 break;
             }
         }
-        ppu->draw_debug();
+        if (current_log_level == log_level::debug) {
+            ppu->draw_debug();
+        } else {
+            ppu->draw();
+        }
     }
 exit:
     return status;

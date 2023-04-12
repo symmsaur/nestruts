@@ -30,7 +30,7 @@ rgb picture_processing_unit::palette_color(bool sprite, int palette_number,
         index |= (1 << 4);
     index |= palette_number << 2;
     index |= val;
-    log(log_level::debug, "sprite: {}, palette_number:, val: {}, index: {}\n",
+    log(log_level::trace, "sprite: {}, palette_number:, val: {}, index: {}\n",
         sprite, palette_number, val, index);
     return palette[palette_data[index]];
 }
@@ -62,46 +62,34 @@ void picture_processing_unit::draw_tile(int base_x, int base_y,
     }
 }
 
-void picture_processing_unit::draw_nametable() {
+void picture_processing_unit::draw_nametable(int index, int base_x) {
     constexpr auto num_rows = 30;
     constexpr auto num_tiles = 32;
-    // Offset to clear debug CHR rom dump
-    auto base_x = 17 * 9;
-    // Draw nametable one.
-    for (auto row = 0; row < num_rows; ++row) {
-        for (auto tile = 0; tile < num_tiles; ++tile) {
-            draw_tile(tile * 8 + base_x, row * 8,
-                      0x100 + ram.at(0x400 + row * num_tiles + tile), 0);
-        }
-    }
-    // Right of nametable one
-    base_x += 8 * num_tiles + 9;
+    auto const base_address = index * 0x400;
     // Draw nametable zero
     for (auto row = 0; row < num_rows; ++row) {
         for (auto tile = 0; tile < num_tiles; ++tile) {
-            auto const attribute =
-                ram.at(0x03C0 + tile / 4 + num_tiles / 4 * (row / 4));
+            auto const attribute = ram.at(base_address + 0x03C0 + tile / 4 +
+                                          num_tiles / 4 * (row / 4));
             // Two bits per 2 x 2 tiles. Top left least significant, then top
             // right, bottom left, and finally bottom right.
             auto const shift_amount =
                 ((row / 2) % 2) * 4 + ((tile / 2) % 2) * 2;
             auto const palette_number = (attribute >> shift_amount) & 0x03;
             draw_tile(tile * 8 + base_x, row * 8,
-                      0x100 + ram.at(0x0 + row * num_tiles + tile),
+                      0x100 + ram.at(base_address + row * num_tiles + tile),
                       palette_number);
         }
     }
 }
 
-void picture_processing_unit::draw_sprites() {
+void picture_processing_unit::draw_sprites(int base_x) {
     constexpr size_t num_sprites = 64;
     constexpr size_t sprite_pitch = 4;
     constexpr size_t y_offset = 0;
     constexpr size_t tile_index_offset = 1;
     constexpr size_t attributes_offset = 2;
     constexpr size_t x_offset = 3;
-    // Refactor this magical thing to get it to draw in the correct place
-    constexpr auto base_x = 8 * 32 + 9 + 17 * 9;
     for (size_t i = 0; i < num_sprites; ++i) {
         // Sprites are offset by one in y.
         auto const y = oam.at(i * sprite_pitch + y_offset) + 1;
@@ -115,6 +103,7 @@ void picture_processing_unit::draw_sprites() {
 }
 
 void picture_processing_unit::draw_debug() {
+    constexpr auto num_tiles = 32;
     gfx.clear();
     // Draw left
     draw_tiles(0, 0, 0);
@@ -122,8 +111,21 @@ void picture_processing_unit::draw_debug() {
     constexpr auto right_base_tile_index = 256;
     constexpr auto right_base_y = 17 * 9;
     draw_tiles(right_base_tile_index, 0, right_base_y);
-    draw_nametable();
-    draw_sprites();
+    // Offset to clear debug CHR rom dump
+    auto base_x = 17 * 9;
+    draw_nametable(1, base_x);
+    // Right of nametable one
+    base_x += 8 * num_tiles + 9;
+    draw_nametable(0, base_x);
+    // Right of nametable one
+    draw_sprites(base_x);
+    gfx.flip();
+}
+
+void picture_processing_unit::draw() {
+    gfx.clear();
+    draw_nametable(0, 0);
+    draw_sprites(0);
     gfx.flip();
 }
 

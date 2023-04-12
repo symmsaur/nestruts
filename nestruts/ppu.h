@@ -23,6 +23,7 @@ class picture_processing_unit {
     // Set vblank status and return if NMI should fire.
     bool vblank();
 
+    void draw();
     void draw_debug();
 
   private:
@@ -30,8 +31,8 @@ class picture_processing_unit {
     void draw_tile(int base_x, int base_y, uint16_t tile_index,
                    int palette_number, bool flip_x = false, bool flip_y = false,
                    bool sprite = false);
-    void draw_nametable();
-    void draw_sprites();
+    void draw_nametable(int index, int base_x);
+    void draw_sprites(int base_x);
 
     rgb palette_color(bool sprite, int palette_number, int val);
     // 8 K of CHR ROM
