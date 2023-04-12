@@ -37,11 +37,13 @@ void picture_processing_unit::draw_tile(int base_x, int base_y,
         uint8_t high_bits = rom.at(offset + y + 8);
         for (auto x = 0; x < 8; x++) {
             // Take out one high and one low bit from the left.
-            auto val = (low_bits >> 7) + (high_bits >> 7) * 2;
-            low_bits = low_bits << 1;
-            high_bits = high_bits << 1;
-            gfx.draw_pixel(flip_func(flip_x, x) + base_x,
-                           flip_func(flip_y, y) + base_y, val);
+            auto const val = (low_bits >> 7) + (high_bits >> 7) * 2;
+            low_bits <<= 1;
+            high_bits <<= 1;
+            if (val != 0x00) {
+                gfx.draw_pixel(flip_func(flip_x, x) + base_x,
+                               flip_func(flip_y, y) + base_y, val);
+            }
         }
     }
 }
@@ -90,6 +92,7 @@ void picture_processing_unit::draw_sprites() {
 }
 
 void picture_processing_unit::draw_debug() {
+    gfx.clear();
     // Draw left
     draw_tiles(0, 0, 0);
     // Draw right

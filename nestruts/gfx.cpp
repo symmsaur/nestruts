@@ -1,5 +1,7 @@
 #include "gfx.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
 
 graphics::graphics() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -10,7 +12,12 @@ graphics::graphics() {
 
 graphics::~graphics() { SDL_DestroyWindow(window); }
 
-void graphics::clear() {}
+void graphics::clear() {
+    auto surf = SDL_GetWindowSurface(window);
+    SDL_LockSurface(surf);
+    SDL_FillRect(surf, nullptr, 0);
+    SDL_UnlockSurface(surf);
+}
 
 void graphics::flip() { SDL_UpdateWindowSurface(window); }
 
