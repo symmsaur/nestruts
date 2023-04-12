@@ -24,13 +24,8 @@ void graphics::flip() { SDL_UpdateWindowSurface(window); }
 void graphics::draw() {}
 
 // Draw a fat pixel
-void graphics::draw_pixel(int nes_x, int nes_y, uint8_t color) {
-    // Map the two bits to RG
-    auto red = (color % 2) * 128;
-    auto green = ((color >> 1) % 2) * 255;
-    auto blue = color * 64;
-    uint32_t color_argb =
-        ((red + (color ? 127 : 0)) << 16) + (green << 8) + blue;
+void graphics::draw_pixel(int nes_x, int nes_y, rgb color) {
+    uint32_t color_argb = (color.red << 16) + (color.green << 8) + color.blue;
     auto surf = SDL_GetWindowSurface(window);
     SDL_LockSurface(surf);
     constexpr int fatness = 2;

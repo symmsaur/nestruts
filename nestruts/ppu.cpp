@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "log.h"
+#include "palette.h"
 
 picture_processing_unit::picture_processing_unit() = default;
 
@@ -17,14 +18,26 @@ void picture_processing_unit::draw_tiles(uint16_t base_tile_index, int base_x,
         for (auto j = 0; j < 16; j++) {
             auto x = i * 9 + base_x;
             auto y = j * 9 + base_y;
-            draw_tile(x, y, (j * 16 + i) + base_tile_index);
+            draw_tile(x, y, (j * 16 + i) + base_tile_index, 0);
         }
     }
 }
 
+rgb picture_processing_unit::palette_color(bool sprite, int palette_number,
+                                           int val) {
+    std::size_t index{0};
+    if (sprite)
+        index |= (1 << 4);
+    index |= palette_number << 2;
+    index |= val;
+    log(log_level::debug, "sprite: {}, palette_number:, val: {}, index: {}\n",
+        sprite, palette_number, val, index);
+    return palette[palette_data[index]];
+}
+
 void picture_processing_unit::draw_tile(int base_x, int base_y,
-                                        uint16_t tile_index, bool flip_x,
-                                        bool flip_y) {
+                                        uint16_t tile_index, int palette_number,
+                                        bool flip_x, bool flip_y, bool sprite) {
     auto const offset = tile_index * 16;
     auto const flip_func = [](auto const flip, auto const x) {
         if (flip)
@@ -42,7 +55,8 @@ void picture_processing_unit::draw_tile(int base_x, int base_y,
             high_bits <<= 1;
             if (val != 0x00) {
                 gfx.draw_pixel(flip_func(flip_x, x) + base_x,
-                               flip_func(flip_y, y) + base_y, val);
+                               flip_func(flip_y, y) + base_y,
+                               palette_color(sprite, palette_number, val));
             }
         }
     }
@@ -57,7 +71,7 @@ void picture_processing_unit::draw_nametable() {
     for (auto row = 0; row < num_rows; ++row) {
         for (auto tile = 0; tile < num_tiles; ++tile) {
             draw_tile(tile * 8 + base_x, row * 8,
-                      0x100 + ram.at(0x400 + row * num_tiles + tile));
+                      0x100 + ram.at(0x400 + row * num_tiles + tile), 0);
         }
     }
     // Right of nametable one
@@ -65,8 +79,16 @@ void picture_processing_unit::draw_nametable() {
     // Draw nametable zero
     for (auto row = 0; row < num_rows; ++row) {
         for (auto tile = 0; tile < num_tiles; ++tile) {
+            auto const attribute =
+                ram.at(0x03C0 + tile / 4 + num_tiles / 4 * (row / 4));
+            // Two bits per 2 x 2 tiles. Top left least significant, then top
+            // right, bottom left, and finally bottom right.
+            auto const shift_amount =
+                ((row / 2) % 2) * 4 + ((tile / 2) % 2) * 2;
+            auto const palette_number = (attribute >> shift_amount) & 0x03;
             draw_tile(tile * 8 + base_x, row * 8,
-                      0x100 + ram.at(0x0 + row * num_tiles + tile));
+                      0x100 + ram.at(0x0 + row * num_tiles + tile),
+                      palette_number);
         }
     }
 }
@@ -86,8 +108,9 @@ void picture_processing_unit::draw_sprites() {
         auto const tile_index = oam.at(i * sprite_pitch + tile_index_offset);
         auto const attributes = oam.at(i * sprite_pitch + attributes_offset);
         auto const x = oam.at(i * sprite_pitch + x_offset);
-        draw_tile(base_x + x, y, tile_index, attributes & (1 << 6),
-                  attributes & (1 << 7));
+        auto const palette_number = attributes & 0x03;
+        draw_tile(base_x + x, y, tile_index, palette_number,
+                  attributes & (1 << 6), attributes & (1 << 7), true);
     }
 }
 
@@ -169,7 +192,14 @@ void picture_processing_unit::write_PPUDATA(uint8_t val) {
         }
         logf(log_level::debug, "\t PPUDATA(%#6x)=%#4x", PPUADDR, val);
         ram[mod_adr] = val;
-        // draw_debug();
+    } else if (PPUADDR >= 0x3f00 && PPUADDR < 0x3f20) {
+        logf(log_level::debug, "\t PPUDATA(%#6x)=%#4x (palette)", PPUADDR, val);
+        palette_data[PPUADDR - 0x3f00] = val;
+        log(log_level::debug, "\npalette updated:\n\t");
+        for (auto const d : palette_data) {
+            log(log_level::debug, "{:02x}", d);
+        }
+        log(log_level::debug, "\n");
     } else {
         logf(log_level::error, "\nUnsupported PPUDATA write to %#6x\n",
              PPUADDR);
