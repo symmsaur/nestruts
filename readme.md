@@ -1,6 +1,6 @@
 # Nestruts
 
-A NES ~~ostrich~~emu-lator.
+A NES ~~ostrich~~-emu-lator.
 
 ## You need
 
