@@ -7,7 +7,8 @@ instruction_store::~instruction_store() {
     FILE *file{fopen("disasm_dump", "w")};
     for (auto &instr : m_instructions) {
         auto const &instruction = instr.second;
-        fmt::print(file, "${:04x}: {}", instruction.pp(), instruction.mnemonic());
+        fmt::print(file, "${:04x}: {}", instruction.pp(),
+                   instruction.mnemonic());
         switch (instruction.mode()) {
         case adr_mode::implied:
             // Print nothing
@@ -46,7 +47,8 @@ instruction_store::~instruction_store() {
             fmt::print(file, " (${:02x}),Y", instruction.argument());
             break;
         case adr_mode::relative:
-            fmt::print(file, " *{:02x}", static_cast<int8_t>(instruction.argument()));
+            fmt::print(file, " *{:02x}",
+                       static_cast<int8_t>(instruction.argument()));
             break;
         }
         // Make it easier to tell subroutines apart
