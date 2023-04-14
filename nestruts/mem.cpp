@@ -1,6 +1,7 @@
 #include "mem.h"
 
 #include "log.h"
+#include <cstdint>
 #include <memory>
 
 memory_bus::memory_bus(std::shared_ptr<picture_processing_unit> p,
@@ -113,6 +114,10 @@ uint8_t memory_bus::read(uint16_t adr) {
         logf(log_level::error, "\tUnsupported read : %#6x\n", adr);
         return 0;
     }
+}
+
+value_proxy memory_bus::operator[](uint16_t adr) {
+    return value_proxy{this, adr};
 }
 
 void memory_bus::load_rom(uint16_t adr, uint8_t val) {

@@ -1,6 +1,7 @@
 #include "core6502.h"
 
 #include "log.h"
+#include "mem.h"
 
 namespace {
 constexpr uint8_t carry_flag = 1;
@@ -109,7 +110,7 @@ uint8_t core6502::pop() {
     return bus->read(stack_offs + sp);
 }
 
-uint8_t core6502::bus_val(uint8_t opcode) {
+value_proxy core6502::bus_val(uint8_t opcode) {
     logf(log_level::instr, " ");
     switch (opcode) {
     case 0xA9:
@@ -127,7 +128,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         logf(log_level::instr, "#%02x", arg);
         current_instruction.set_mode(adr_mode::immediate);
         current_instruction.set_argument(arg);
-        return arg;
+        return value_proxy{arg};
     }
     case 0x30:
     case 0x10:
@@ -140,7 +141,7 @@ uint8_t core6502::bus_val(uint8_t opcode) {
         logf(log_level::instr, "*%i", static_cast<int8_t>(arg));
         current_instruction.set_mode(adr_mode::relative);
         current_instruction.set_argument(arg);
-        return arg;
+        return value_proxy{arg};
     }
     case 0xA5:
     case 0x65:
@@ -153,12 +154,13 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xC4:
     case 0x24:
     case 0x45:
-    case 0xE5: {
+    case 0xE5:
+    case 0x85: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x", arg);
         current_instruction.set_mode(adr_mode::zero_page);
         current_instruction.set_argument(arg);
-        return bus->read(zero(arg));
+        return (*bus)[zero(arg)];
     }
     case 0xB5:
     case 0x75:
@@ -167,19 +169,20 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x15:
     case 0xD5:
     case 0x55:
-    case 0xF5: {
+    case 0xF5:
+    case 0x95: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,X", arg);
         current_instruction.set_mode(adr_mode::x_indexed_zero_page);
         current_instruction.set_argument(arg);
-        return bus->read(zero_x(arg));
+        return (*bus)[zero_x(arg)];
     }
     case 0xB6: {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,Y", arg);
         current_instruction.set_mode(adr_mode::y_indexed_zero_page);
         current_instruction.set_argument(arg);
-        return bus->read(zero_y(arg));
+        return (*bus)[zero_y(arg)];
     }
     case 0xAD:
     case 0x6D:
@@ -192,13 +195,14 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0xCC:
     case 0x2C:
     case 0x4D:
-    case 0xED: {
+    case 0xED:
+    case 0x8D: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
         current_instruction.set_mode(adr_mode::absolute);
         current_instruction.set_argument((high_adr << 8) + low_adr);
-        return bus->read(absolute(low_adr, high_adr));
+        return (*bus)[absolute(low_adr, high_adr)];
     }
     case 0xBD:
     case 0x7D:
@@ -207,13 +211,14 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x1D:
     case 0xDD:
     case 0x5D:
-    case 0xFD: {
+    case 0xFD:
+    case 0x9D: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
         current_instruction.set_mode(adr_mode::x_indexed_absolute);
         current_instruction.set_argument((high_adr << 8) + low_adr);
-        return bus->read(absolute_x(low_adr, high_adr));
+        return (*bus)[absolute_x(low_adr, high_adr)];
     }
     case 0xB9:
     case 0x79:
@@ -222,13 +227,14 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x19:
     case 0xD9:
     case 0x59:
-    case 0xF9: {
+    case 0xF9:
+    case 0x99: {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,Y", high_adr, low_adr);
         current_instruction.set_mode(adr_mode::y_indexed_absolute);
         current_instruction.set_argument((high_adr << 8) + low_adr);
-        return bus->read(absolute_y(low_adr, high_adr));
+        return (*bus)[absolute_y(low_adr, high_adr)];
     }
     case 0xA1:
     case 0x61:
@@ -236,12 +242,13 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x01:
     case 0xC1:
     case 0x41:
-    case 0xE1: {
+    case 0xE1:
+    case 0x81: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
         current_instruction.set_mode(adr_mode::x_indexed_zero_page_indirect);
         current_instruction.set_argument(arg);
-        return bus->read(indirect_x(arg));
+        return (*bus)[indirect_x(arg)];
     }
     case 0xB1:
     case 0x71:
@@ -249,17 +256,18 @@ uint8_t core6502::bus_val(uint8_t opcode) {
     case 0x11:
     case 0xD1:
     case 0x51:
-    case 0xF1: {
+    case 0xF1:
+    case 0x91: {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
         current_instruction.set_mode(adr_mode::zero_page_indirect_y_indexed);
         current_instruction.set_argument(arg);
-        return bus->read(indirect_y(arg));
+        return (*bus)[indirect_y(arg)];
     }
     default:
         logf(log_level::error, "Unsupported opcode for bus_val %#4x", opcode);
         faulted = true;
-        return 0u;
+        return value_proxy{static_cast<uint8_t>(0)};
     }
     logf(log_level::instr, " ");
 }
@@ -267,7 +275,6 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
     logf(log_level::instr, " ");
     switch (opcode) {
     case 0x06:
-    case 0x85:
     case 0x86:
     case 0x46:
     case 0xE6:
@@ -282,7 +289,6 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         return zero(arg);
     }
     case 0x16:
-    case 0x95:
     case 0x96:
     case 0x56:
     case 0xF6:
@@ -297,7 +303,6 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         return zero_x(arg);
     }
     case 0x0E:
-    case 0x8D:
     case 0x8E:
     case 0x20:
     case 0x4E:
@@ -315,7 +320,6 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         return absolute(low_adr, high_adr);
     }
     case 0x1E:
-    case 0x9D:
     case 0x5E:
     case 0xFE:
     case 0xDE:
@@ -327,28 +331,6 @@ uint16_t core6502::tgt_adr(uint8_t opcode) {
         current_instruction.set_mode(adr_mode::x_indexed_absolute);
         current_instruction.set_argument((high_adr << 8) + low_adr);
         return absolute_x(low_adr, high_adr);
-    }
-    case 0x99: {
-        uint8_t low_adr = fetch();
-        uint8_t high_adr = fetch();
-        logf(log_level::instr, " $%02x%02x,Y", high_adr, low_adr);
-        current_instruction.set_mode(adr_mode::y_indexed_absolute);
-        current_instruction.set_argument((high_adr << 8) + low_adr);
-        return absolute_y(low_adr, high_adr);
-    }
-    case 0x81: {
-        uint8_t arg = fetch();
-        logf(log_level::instr, "($%02x,X)", arg);
-        current_instruction.set_mode(adr_mode::x_indexed_zero_page_indirect);
-        current_instruction.set_argument(arg);
-        return indirect_x(arg);
-    }
-    case 0x91: {
-        uint8_t arg = fetch();
-        logf(log_level::instr, "($%02x),Y", arg);
-        current_instruction.set_mode(adr_mode::zero_page_indirect_y_indexed);
-        current_instruction.set_argument(arg);
-        return indirect_y(arg);
     }
     case 0x6C: {
         uint8_t low_adr = fetch();
@@ -555,7 +537,7 @@ void core6502::execute() {
     case 0x91:
         logf(log_level::instr, "STA");
         current_instruction.set_mnemonic("STA");
-        STA(tgt_adr(opcode));
+        STA(bus_val(opcode));
         break;
     case 0x86:
     case 0x96:
@@ -1196,7 +1178,7 @@ void core6502::BRK() {
     set_pp(adr);
 }
 
-void core6502::STA(uint16_t adr) { bus->write(adr, accumulator); }
+void core6502::STA(value_proxy value) { value = accumulator; }
 
 void core6502::STX(uint16_t adr) { bus->write(adr, x); }
 

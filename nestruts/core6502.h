@@ -64,7 +64,7 @@ class core6502 final {
     uint8_t fetch();
     void push(uint8_t val);
     uint8_t pop();
-    uint8_t bus_val(uint8_t opcode);
+    value_proxy bus_val(uint8_t opcode);
     uint16_t tgt_adr(uint8_t opcode);
     void pushpp();
 
@@ -97,7 +97,7 @@ class core6502 final {
     void LDY(uint8_t val);
     void LDX(uint8_t val);
 
-    void STA(uint16_t adr);
+    void STA(value_proxy val);
     void STX(uint16_t adr);
     void STY(uint16_t adr);
 
