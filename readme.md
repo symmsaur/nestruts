@@ -1,6 +1,6 @@
 # Nestruts
 
-An NES ~~ostrich~~-emu-lator.
+An NES undulat-or.
 
 ## You need
 
