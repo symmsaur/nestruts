@@ -86,7 +86,9 @@ int run_game(std::string const &rom_filename) {
     auto cpu = std::make_unique<core6502>(std::move(bus),
                                           [apu]() { return apu->IRQ(); });
     cpu->setpp(reset_vector);
-    constexpr int cycles_per_frame{30000}; // Actual NTSC: 29780.5
+    // Actual NTSC: 29780.5. We run one instruction per cycle which is way
+    // faster than a real 6502 so ~1/3 should still be plenty.
+    constexpr int cycles_per_frame{10000};
     // Warm up for one frame (enough?)
     for (int i{0}; i < cycles_per_frame; ++i) {
         if (!cpu->is_faulted()) {
