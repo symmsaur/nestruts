@@ -157,6 +157,8 @@ int run_game(std::string const &rom_filename) {
         } else {
             ppu->draw();
         }
+        if (cpu->is_faulted())
+            break;
     }
 exit:
     return status;
