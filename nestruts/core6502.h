@@ -65,7 +65,6 @@ class core6502 final {
     void push(uint8_t val);
     uint8_t pop();
     value_proxy bus_val(uint8_t opcode);
-    uint16_t tgt_adr(uint8_t opcode);
     void pushpp();
 
     void execute();
@@ -98,31 +97,31 @@ class core6502 final {
     void LDX(uint8_t val);
 
     void STA(value_proxy val);
-    void STX(uint16_t adr);
-    void STY(uint16_t adr);
+    void STX(value_proxy val);
+    void STY(value_proxy val);
 
     void ADC(uint8_t val);
     void SBC(uint8_t val);
     void AND(uint8_t val);
     void ASL();
-    void ASL(uint16_t adr);
+    void ASL(value_proxy val);
     uint8_t ASL(uint8_t val);
     void CMP(uint8_t val);
     void CPX(uint8_t val);
     void CPY(uint8_t val);
     void BIT(uint8_t val);
     void LSR();
-    void LSR(uint16_t adr);
+    void LSR(value_proxy val);
     uint8_t LSR(uint8_t val);
     void ROL();
-    void ROL(uint16_t adr);
+    void ROL(value_proxy val);
     uint8_t ROL(uint8_t val);
     void ROR();
-    void ROR(uint16_t adr);
+    void ROR(value_proxy val);
     uint8_t ROR(uint8_t val);
     void ORA(uint8_t val);
     void EOR(uint8_t val);
-    void INC(uint16_t adr);
+    void INC(value_proxy val);
     void INX();
     void INY();
     void PHA();
@@ -134,7 +133,7 @@ class core6502 final {
     void TAY();
     void TYA();
     void TXS();
-    void DEC(uint16_t adr);
+    void DEC(value_proxy val);
     void DEX();
     void DEY();
     void SEC();
