@@ -56,8 +56,6 @@ class core6502 final {
     uint16_t pp{};
     bool faulted{};
 
-    int cycles_alloc{};
-
     instruction_info current_instruction{};
     instruction_store store{};
 
