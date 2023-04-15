@@ -39,15 +39,15 @@ class value_proxy final {
     explicit value_proxy(uint8_t value) : m_value{value} {}
     explicit value_proxy(memory_bus *mem, uint16_t adr)
         : m_mem{mem}, m_adr{adr} {}
-
-    value_proxy &operator=(value_proxy const &) = default;
-    value_proxy &operator=(uint8_t const &val) {
-        if (m_mem)
-            m_mem->write(m_adr, val);
-        return *this;
+    void set(uint8_t val) {
+        if (!m_mem) {
+            // TODO: Make hard error or even compile time error.
+            log(log_level::error, "Writing to read-only memory");
+            return;
+        }
+        m_mem->write(m_adr, val);
     }
-
-    operator uint8_t() { return m_mem ? m_mem->read(m_adr) : m_value; }
+    uint8_t value() { return m_mem ? m_mem->read(m_adr) : m_value; }
 
   private:
     memory_bus *m_mem{};
