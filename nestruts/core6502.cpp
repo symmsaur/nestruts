@@ -114,80 +114,84 @@ uint8_t core6502::pop() {
 value_proxy core6502::bus_val(uint8_t opcode) {
     logf(log_level::instr, " ");
     switch (opcode) {
-    case 0xA9:
-    case 0x69:
+    case 0x09:
     case 0x29:
+    case 0x49:
+    case 0x69:
     case 0xA0:
     case 0xA2:
-    case 0x09:
+    case 0xA9:
+    case 0xC0:
     case 0xC9:
     case 0xE0:
-    case 0xC0:
-    case 0x49:
-    case 0xE9: {
+    case 0xE9:
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "#%02x", arg);
         current_instruction.set_mode(adr_mode::immediate);
         current_instruction.set_argument(arg);
         return value_proxy{arg};
     }
-    case 0x30:
     case 0x10:
+    case 0x30:
     case 0x50:
     case 0x90:
     case 0xB0:
     case 0xD0:
-    case 0xF0: {
+    case 0xF0:
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "*%i", static_cast<int8_t>(arg));
         current_instruction.set_mode(adr_mode::relative);
         current_instruction.set_argument(arg);
         return value_proxy{arg};
     }
-    case 0xA5:
-    case 0x65:
-    case 0x25:
-    case 0xA4:
-    case 0xA6:
     case 0x05:
-    case 0xC5:
-    case 0xE4:
-    case 0xC4:
-    case 0x24:
-    case 0x45:
-    case 0xE5:
-    case 0x85:
     case 0x06:
-    case 0x86:
+    case 0x24:
+    case 0x25:
+    case 0x26:
+    case 0x45:
     case 0x46:
-    case 0xE6:
-    case 0x84:
-    case 0xC6:
+    case 0x65:
     case 0x66:
-    case 0x26: {
+    case 0x84:
+    case 0x85:
+    case 0x86:
+    case 0xA4:
+    case 0xA5:
+    case 0xA6:
+    case 0xC4:
+    case 0xC5:
+    case 0xC6:
+    case 0xE4:
+    case 0xE5:
+    case 0xE6:
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x", arg);
         current_instruction.set_mode(adr_mode::zero_page);
         current_instruction.set_argument(arg);
         return (*bus)[zero(arg)];
     }
-    case 0xB5:
-    case 0x75:
-    case 0x35:
-    case 0xB4:
     case 0x15:
-    case 0xD5:
-    case 0x55:
-    case 0xF5:
-    case 0x95:
     case 0x16:
-    case 0x96:
+    case 0x35:
+    case 0x36:
+    case 0x55:
     case 0x56:
-    case 0xF6:
-    case 0x94:
-    case 0xD6:
+    case 0x75:
     case 0x76:
-    case 0x36: {
+    case 0x94:
+    case 0x95:
+    case 0x96:
+    case 0xB4:
+    case 0xB5:
+    case 0xD5:
+    case 0xD6:
+    case 0xF5:
+    case 0xF6:
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "$%02x,X", arg);
         current_instruction.set_mode(adr_mode::x_indexed_zero_page);
@@ -201,27 +205,28 @@ value_proxy core6502::bus_val(uint8_t opcode) {
         current_instruction.set_argument(arg);
         return (*bus)[zero_y(arg)];
     }
-    case 0xAD:
-    case 0x6D:
-    case 0x2D:
-    case 0xAC:
-    case 0xAE:
     case 0x0D:
-    case 0xCD:
-    case 0xEC:
-    case 0xCC:
-    case 0x2C:
-    case 0x4D:
-    case 0xED:
-    case 0x8D:
     case 0x0E:
-    case 0x8E:
+    case 0x2C:
+    case 0x2D:
+    case 0x2E:
+    case 0x4D:
     case 0x4E:
-    case 0xEE:
-    case 0x8C:
-    case 0xCE:
+    case 0x6D:
     case 0x6E:
-    case 0x2E: {
+    case 0x8C:
+    case 0x8D:
+    case 0x8E:
+    case 0xAC:
+    case 0xAD:
+    case 0xAE:
+    case 0xCC:
+    case 0xCD:
+    case 0xCE:
+    case 0xEC:
+    case 0xED:
+    case 0xEE:
+    {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x", high_adr, low_adr);
@@ -229,21 +234,22 @@ value_proxy core6502::bus_val(uint8_t opcode) {
         current_instruction.set_argument((high_adr << 8) + low_adr);
         return (*bus)[absolute(low_adr, high_adr)];
     }
-    case 0xBD:
-    case 0x7D:
-    case 0x3D:
-    case 0xBC:
     case 0x1D:
-    case 0xDD:
-    case 0x5D:
-    case 0xFD:
-    case 0x9D:
     case 0x1E:
+    case 0x3D:
+    case 0x3E:
+    case 0x5D:
     case 0x5E:
-    case 0xFE:
-    case 0xDE:
+    case 0x7D:
     case 0x7E:
-    case 0x3E: {
+    case 0x9D:
+    case 0xBC:
+    case 0xBD:
+    case 0xDD:
+    case 0xDE:
+    case 0xFD:
+    case 0xFE:
+    {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,X", high_adr, low_adr);
@@ -251,15 +257,16 @@ value_proxy core6502::bus_val(uint8_t opcode) {
         current_instruction.set_argument((high_adr << 8) + low_adr);
         return (*bus)[absolute_x(low_adr, high_adr)];
     }
-    case 0xB9:
-    case 0x79:
-    case 0x39:
-    case 0xBE:
     case 0x19:
-    case 0xD9:
+    case 0x39:
     case 0x59:
+    case 0x79:
+    case 0x99:
+    case 0xB9:
+    case 0xBE:
+    case 0xD9:
     case 0xF9:
-    case 0x99: {
+    {
         uint8_t low_adr = fetch();
         uint8_t high_adr = fetch();
         logf(log_level::instr, "$%02x%02x,Y", high_adr, low_adr);
@@ -267,28 +274,30 @@ value_proxy core6502::bus_val(uint8_t opcode) {
         current_instruction.set_argument((high_adr << 8) + low_adr);
         return (*bus)[absolute_y(low_adr, high_adr)];
     }
-    case 0xA1:
-    case 0x61:
-    case 0x21:
     case 0x01:
-    case 0xC1:
+    case 0x21:
     case 0x41:
+    case 0x61:
+    case 0x81:
+    case 0xA1:
+    case 0xC1:
     case 0xE1:
-    case 0x81: {
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x,X)", arg);
         current_instruction.set_mode(adr_mode::x_indexed_zero_page_indirect);
         current_instruction.set_argument(arg);
         return (*bus)[indirect_x(arg)];
     }
-    case 0xB1:
-    case 0x71:
-    case 0x31:
     case 0x11:
-    case 0xD1:
+    case 0x31:
     case 0x51:
+    case 0x71:
+    case 0x91:
+    case 0xB1:
+    case 0xD1:
     case 0xF1:
-    case 0x91: {
+    {
         uint8_t arg = fetch();
         logf(log_level::instr, "($%02x),Y", arg);
         current_instruction.set_mode(adr_mode::zero_page_indirect_y_indexed);
@@ -309,22 +318,22 @@ void core6502::execute() {
     logf(log_level::instr, "%#06x: ", pp);
     uint8_t opcode = fetch();
     switch (opcode) {
-    case 0xA9:
-    case 0xA5:
-    case 0xB5:
-    case 0xAD:
-    case 0xBD:
-    case 0xB9:
     case 0xA1:
+    case 0xA5:
+    case 0xA9:
+    case 0xAD:
     case 0xB1:
+    case 0xB5:
+    case 0xB9:
+    case 0xBD:
         logf(log_level::instr, "LDA");
         current_instruction.set_mnemonic("LDA");
         LDA(bus_val(opcode));
         break;
     case 0xA0:
     case 0xA4:
-    case 0xB4:
     case 0xAC:
+    case 0xB4:
     case 0xBC:
         logf(log_level::instr, "LDY");
         current_instruction.set_mnemonic("LDY");
@@ -332,81 +341,81 @@ void core6502::execute() {
         break;
     case 0xA2:
     case 0xA6:
-    case 0xB6:
     case 0xAE:
+    case 0xB6:
     case 0xBE:
         logf(log_level::instr, "LDX");
         current_instruction.set_mnemonic("LDX");
         LDX(bus_val(opcode));
         break;
-    case 0x69:
-    case 0x65:
-    case 0x75:
-    case 0x6D:
-    case 0x7D:
-    case 0x79:
     case 0x61:
+    case 0x65:
+    case 0x69:
+    case 0x6D:
     case 0x71:
+    case 0x75:
+    case 0x79:
+    case 0x7D:
         logf(log_level::instr, "ADC");
         current_instruction.set_mnemonic("ADC");
         ADC(bus_val(opcode));
         break;
-    case 0xE9:
-    case 0xE5:
-    case 0xF5:
-    case 0xED:
-    case 0xFD:
-    case 0xF9:
     case 0xE1:
+    case 0xE5:
+    case 0xE9:
+    case 0xED:
     case 0xF1:
+    case 0xF5:
+    case 0xF9:
+    case 0xFD:
         logf(log_level::instr, "SBC");
         current_instruction.set_mnemonic("SBC");
         SBC(bus_val(opcode));
         break;
-    case 0x29:
-    case 0x25:
-    case 0x35:
-    case 0x2D:
-    case 0x3D:
-    case 0x39:
     case 0x21:
+    case 0x25:
+    case 0x29:
+    case 0x2D:
     case 0x31:
+    case 0x35:
+    case 0x39:
+    case 0x3D:
         logf(log_level::instr, "AND");
         current_instruction.set_mnemonic("AND");
         AND(bus_val(opcode));
         break;
-    case 0x09:
-    case 0x05:
-    case 0x15:
-    case 0x0D:
-    case 0x1D:
-    case 0x19:
     case 0x01:
+    case 0x05:
+    case 0x09:
+    case 0x0D:
     case 0x11:
+    case 0x15:
+    case 0x19:
+    case 0x1D:
         logf(log_level::instr, "ORA");
         current_instruction.set_mnemonic("ORA");
         ORA(bus_val(opcode));
         break;
-    case 0x49:
-    case 0x45:
-    case 0x55:
-    case 0x4D:
-    case 0x5D:
-    case 0x59:
     case 0x41:
+    case 0x45:
+    case 0x49:
+    case 0x4D:
     case 0x51:
+    case 0x55:
+    case 0x59:
+    case 0x5D:
         logf(log_level::instr, "EOR");
         current_instruction.set_mnemonic("EOR");
         EOR(bus_val(opcode));
         break;
-    case 0xC9:
-    case 0xC5:
-    case 0xD5:
-    case 0xCD:
-    case 0xDD:
-    case 0xD9:
     case 0xC1:
+    case 0xC5:
+    case 0xC9:
+    case 0xCD:
     case 0xD1:
+    case 0xD5:
+    case 0xD9:
+    case 0xDD:
         logf(log_level::instr, "CMP");
         current_instruction.set_mnemonic("CMP");
         CMP(bus_val(opcode));
@@ -438,12 +447,12 @@ void core6502::execute() {
         ASL();
         break;
     case 0x06:
-    case 0x16:
     case 0x0E:
+    case 0x16:
     case 0x1E:
     case 0x46:
-    case 0x56:
     case 0x4E:
+    case 0x56:
     case 0x5E:
         logf(log_level::instr, "ASL");
         current_instruction.set_mnemonic("ASL");
@@ -462,8 +471,8 @@ void core6502::execute() {
         ROL();
         break;
     case 0x26:
-    case 0x36:
     case 0x2E:
+    case 0x36:
     case 0x3E:
         logf(log_level::instr, "ROL");
         current_instruction.set_mnemonic("ROL");
@@ -476,34 +485,34 @@ void core6502::execute() {
         ROR();
         break;
     case 0x66:
-    case 0x76:
     case 0x6E:
+    case 0x76:
     case 0x7E:
         logf(log_level::instr, "ROR");
         current_instruction.set_mnemonic("ROR");
         ROR(bus_val(opcode));
         break;
-    case 0x85:
-    case 0x95:
-    case 0x8D:
-    case 0x9D:
-    case 0x99:
     case 0x81:
+    case 0x85:
+    case 0x8D:
     case 0x91:
+    case 0x95:
+    case 0x99:
+    case 0x9D:
         logf(log_level::instr, "STA");
         current_instruction.set_mnemonic("STA");
         STA(bus_val(opcode));
         break;
     case 0x86:
-    case 0x96:
     case 0x8E:
+    case 0x96:
         logf(log_level::instr, "STX");
         current_instruction.set_mnemonic("STX");
         STX(bus_val(opcode));
         break;
     case 0x84:
-    case 0x94:
     case 0x8C:
+    case 0x94:
         logf(log_level::instr, "STY");
         current_instruction.set_mnemonic("STY");
         STY(bus_val(opcode));
@@ -587,16 +596,16 @@ void core6502::execute() {
         RTS();
         break;
     case 0xE6:
-    case 0xF6:
     case 0xEE:
+    case 0xF6:
     case 0xFE:
         logf(log_level::instr, "INC");
         current_instruction.set_mnemonic("INC");
         INC(bus_val(opcode));
         break;
     case 0xC6:
-    case 0xD6:
     case 0xCE:
+    case 0xD6:
     case 0xDE:
         logf(log_level::instr, "DEC");
         current_instruction.set_mnemonic("DEC");
