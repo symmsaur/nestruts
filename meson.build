@@ -13,6 +13,7 @@ lib = library(
     'struts_lib',
     [
         'nestruts/apu.cpp',
+        'nestruts/audio.cpp',
         'nestruts/core6502.cpp',
         'nestruts/gfx.cpp',
         'nestruts/instruction_store.cpp',
