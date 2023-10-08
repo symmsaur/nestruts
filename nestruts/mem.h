@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "audio_processing_unit.h"
+#include "apu.h"
 #include "controller.h"
 #include "log.h"
 #include "ppu.h"

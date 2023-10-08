@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-#include "audio_processing_unit.h"
+#include "apu.h"
 #include "controller.h"
 #include "core6502.h"
 #include "log.h"

@@ -12,7 +12,7 @@ sdl2 = meson.get_compiler('cpp').find_library('SDL2')
 lib = library(
     'struts_lib',
     [
-        'nestruts/audio_processing_unit.cpp',
+        'nestruts/apu.cpp',
         'nestruts/core6502.cpp',
         'nestruts/gfx.cpp',
         'nestruts/instruction_store.cpp',
