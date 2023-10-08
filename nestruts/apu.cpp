@@ -36,21 +36,21 @@ bool audio_processing_unit::IRQ() {
 }
 
 void audio_processing_unit::pulse1_dlcn(uint8_t val) {
-    log(log_level::debug, "Set pulse1_dlcn\n");
+    log(log_level::debug, "\tSet pulse1_dlcn {}", val);
     reg_pulse1_dlcn = val;
 }
 
 void audio_processing_unit::pulse1_sweep(uint8_t val) {
-    log(log_level::debug, "Set pulse1_sweep\n");
+    log(log_level::debug, "\tSet pulse1_sweep {}", val);
     reg_pulse1_sweep = val;
 }
 
 void audio_processing_unit::pulse1_timer_low(uint8_t val) {
-    log(log_level::debug, "Set pulse1_timer_low\n");
+    log(log_level::debug, "\tSet pulse1_timer_low {}", val);
     reg_pulse1_timer_low = val;
 }
 
 void audio_processing_unit::pulse1_length_timer(uint8_t val) {
-    log(log_level::debug, "Set pulse1_length_timer\n");
+    log(log_level::debug, "\tSet pulse1_length_timer {}", val);
     reg_pulse1_length_timer = val;
 }
