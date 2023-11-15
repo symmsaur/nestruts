@@ -157,6 +157,7 @@ int run_game(std::string const &rom_filename) {
         } else {
             ppu->draw();
         }
+        apu->play_audio();
         if (cpu->is_faulted())
             break;
     }

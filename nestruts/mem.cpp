@@ -53,6 +53,14 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
         apu->pulse1_timer_low(val);
     } else if (adr == 0x4003) {
         apu->pulse1_length_timer(val);
+    } else if (adr == 0x4004) {
+        apu->pulse2_dlcn(val);
+    } else if (adr == 0x4005) {
+        apu->pulse2_sweep(val);
+    } else if (adr == 0x4006) {
+        apu->pulse2_timer_low(val);
+    } else if (adr == 0x4007) {
+        apu->pulse2_length_timer(val);
     }
     // APU // IO
     else if (adr == 0x4014) {
