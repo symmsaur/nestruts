@@ -12,16 +12,24 @@ class audio_processing_unit final {
         void dlcn(uint8_t val) { reg_dlcn = val; }
         void sweep(uint8_t val) { reg_sweep = val; }
         void timer_low(uint8_t val) { reg_timer_low = val; }
-        void length_timer(uint8_t val) { reg_length_timer = val; }
+        void length_counter_timer_high(uint8_t val) {
+            reg_length_timer = val;
+            load_length_counter();
+        }
         void play(std::span<std::int16_t> audio_buffer, int sample_rate_hz);
+            void enable(bool val) { enabled = val; }
 
       private:
         // duty
-        // infinite
+        bool length_counter_halt();
         // envelope disable
         int volume_envelope();
+        void load_length_counter();
 
+        bool enabled{};
         int counter_pulse_1{};
+        int length_counter{};
+        int samples_until_length_counter{};
         uint8_t reg_dlcn{};
         uint8_t reg_sweep{};
         uint8_t reg_timer_low{};
@@ -32,6 +40,7 @@ class audio_processing_unit final {
     void set_frame_counter(uint8_t val);
     void play_audio();
 
+    void write_status(uint8_t value);
     uint8_t read_status();
 
     // Should interrupt trigger?
