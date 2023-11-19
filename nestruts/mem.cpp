@@ -46,21 +46,21 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
             break;
         }
     } else if (adr == 0x4000) {
-        apu->pulse1_dlcn(val);
+        apu->pulse1.dlcn(val);
     } else if (adr == 0x4001) {
-        apu->pulse1_sweep(val);
+        apu->pulse1.sweep(val);
     } else if (adr == 0x4002) {
-        apu->pulse1_timer_low(val);
+        apu->pulse1.timer_low(val);
     } else if (adr == 0x4003) {
-        apu->pulse1_length_timer(val);
+        apu->pulse1.length_timer(val);
     } else if (adr == 0x4004) {
-        apu->pulse2_dlcn(val);
+        apu->pulse2.dlcn(val);
     } else if (adr == 0x4005) {
-        apu->pulse2_sweep(val);
+        apu->pulse2.sweep(val);
     } else if (adr == 0x4006) {
-        apu->pulse2_timer_low(val);
+        apu->pulse2.timer_low(val);
     } else if (adr == 0x4007) {
-        apu->pulse2_length_timer(val);
+        apu->pulse2.length_timer(val);
     }
     // APU // IO
     else if (adr == 0x4014) {

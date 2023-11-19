@@ -1,9 +1,28 @@
 #pragma once
-#include "audio.h"
 #include <cstdint>
+#include <span>
+
+#include "audio.h"
 
 class audio_processing_unit final {
   public:
+    class pulse final {
+        // FIXME: Pulse channels are missing envelope, sweep, duty cycle.
+      public:
+        void dlcn(uint8_t val) { reg_dlcn = val; }
+        void sweep(uint8_t val) { reg_sweep = val; }
+        void timer_low(uint8_t val) { reg_timer_low = val; }
+        void length_timer(uint8_t val) { reg_length_timer = val; }
+        void play(std::span<std::int16_t> audio_buffer, int sample_rate_hz);
+
+      private:
+        int counter_pulse_1{};
+        uint8_t reg_dlcn{};
+        uint8_t reg_sweep{};
+        uint8_t reg_timer_low{};
+        uint8_t reg_length_timer{};
+    };
+
     void cycle();
     void set_frame_counter(uint8_t val);
     void play_audio();
@@ -13,34 +32,16 @@ class audio_processing_unit final {
     // Should interrupt trigger?
     bool IRQ();
 
-    void pulse1_dlcn(uint8_t val);
-    void pulse1_sweep(uint8_t val);
-    void pulse1_timer_low(uint8_t val);
-    void pulse1_length_timer(uint8_t val);
-
-    void pulse2_dlcn(uint8_t val);
-    void pulse2_sweep(uint8_t val);
-    void pulse2_timer_low(uint8_t val);
-    void pulse2_length_timer(uint8_t val);
+    // Any reason I should hide these?
+    pulse pulse1{};
+    pulse pulse2{};
 
   private:
     audio_backend audio{};
 
-    int counter_pulse_1{};
-    int counter_pulse_2{};
     std::array<std::int16_t, 2048> audio_buffer{};
 
     bool frame_counter_mode = false;
     bool inhibit_irq = false;
     int cycles_til_irq = 5000; // Should be 60 Hz (is not!).
-
-    uint8_t reg_pulse1_dlcn{};
-    uint8_t reg_pulse1_sweep{};
-    uint8_t reg_pulse1_timer_low{};
-    uint8_t reg_pulse1_length_timer{};
-
-    uint8_t reg_pulse2_dlcn{};
-    uint8_t reg_pulse2_sweep{};
-    uint8_t reg_pulse2_timer_low{};
-    uint8_t reg_pulse2_length_timer{};
 };
