@@ -16,6 +16,11 @@ class audio_processing_unit final {
         void play(std::span<std::int16_t> audio_buffer, int sample_rate_hz);
 
       private:
+        // duty
+        // infinite
+        // envelope disable
+        int volume_envelope();
+
         int counter_pulse_1{};
         uint8_t reg_dlcn{};
         uint8_t reg_sweep{};

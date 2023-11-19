@@ -8,19 +8,10 @@ constexpr uint8_t frame_counter_mode_bit = 1 << 7;
 constexpr uint8_t inhibit_irq_bit = 1 << 6;
 } // namespace
 
-void audio_processing_unit::cycle() { --cycles_til_irq; }
-
-void audio_processing_unit::set_frame_counter(uint8_t val) {
-    frame_counter_mode = val & frame_counter_mode_bit;
-    logf(log_level::debug, " frame_counter_mode=%i", frame_counter_mode);
-    inhibit_irq = val & inhibit_irq_bit;
-    logf(log_level::debug, " inhibit_irq=%i", inhibit_irq);
-}
-
 void audio_processing_unit::pulse::play(std::span<std::int16_t> audio_buffer,
                                         int sample_rate_hz) {
     // Multiply set volume by arbitrary multiplier
-    int volume = (reg_dlcn & 0x15) * 256;
+    int volume = volume_envelope() * 256;
     int period_ticks = ((0x7 & reg_length_timer) << 8) + reg_timer_low + 1;
     float frequency = 111860.8f / period_ticks;
     if (frequency > 2000)
@@ -34,6 +25,19 @@ void audio_processing_unit::pulse::play(std::span<std::int16_t> audio_buffer,
         }
         val += counter_pulse_1++ > period_samples / 2 ? volume : -volume;
     }
+}
+
+int audio_processing_unit::pulse::volume_envelope() {
+    return (reg_dlcn & 0x15);
+}
+
+void audio_processing_unit::cycle() { --cycles_til_irq; }
+
+void audio_processing_unit::set_frame_counter(uint8_t val) {
+    frame_counter_mode = val & frame_counter_mode_bit;
+    logf(log_level::debug, " frame_counter_mode=%i", frame_counter_mode);
+    inhibit_irq = val & inhibit_irq_bit;
+    logf(log_level::debug, " inhibit_irq=%i", inhibit_irq);
 }
 
 void audio_processing_unit::play_audio() {
