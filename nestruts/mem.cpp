@@ -12,7 +12,7 @@ memory_bus::memory_bus(std::shared_ptr<picture_processing_unit> p,
 void memory_bus::write(uint16_t adr, uint8_t val) {
     // RAM
     if (adr < 0x2000) {
-        logf(log_level::debug, "w %#06x=%#04x ", adr, val);
+        logf(log_level::debug, "\tw %#06x=%#04x ", adr, val);
         uint16_t mod_adr = adr % 0x800;
         ram[mod_adr] = val;
     }
