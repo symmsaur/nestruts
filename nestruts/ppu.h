@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <cstdint>
+#include <span>
 
 #include "gfx.h"
 
@@ -18,7 +19,7 @@ class picture_processing_unit {
     void write_PPUADDR(uint8_t val);
     void write_PPUDATA(uint8_t val);
 
-    void dma_write(uint8_t i, uint8_t val);
+    void dma_copy(std::span<uint8_t const, 0x100> data);
 
     // Set vblank status and return if NMI should fire.
     bool vblank();

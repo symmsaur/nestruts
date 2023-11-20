@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 
 #include "log.h"
 #include "palette.h"
@@ -213,9 +214,11 @@ void picture_processing_unit::write_PPUDATA(uint8_t val) {
     }
 }
 
-void picture_processing_unit::dma_write(uint8_t i, uint8_t val) {
-    // Is this correct with respect to OAMADDR?
-    oam[i] = val;
+void picture_processing_unit::dma_copy(std::span<uint8_t const, 0x100> data) {
+    std::copy(
+        std::begin(data),
+        std::end(data),
+        std::begin(oam));
 }
 
 bool picture_processing_unit::vblank() {

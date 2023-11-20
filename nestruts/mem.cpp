@@ -62,15 +62,12 @@ void memory_bus::write(uint16_t adr, uint8_t val) {
         apu->pulse2.timer_low(val);
     } else if (adr == 0x4007) {
         apu->pulse2.length_counter_timer_high(val);
-    }
-    else if (adr == 0x4014) {
+    } else if (adr == 0x4014) {
         // OAM DMA
         // Should take 513 or 514 cycles.
-        // REFACTOR: Consider moving to CPU.
-        uint16_t offs = val << 8;
-        for (uint8_t i = 0; i < 0xFF; i++) {
-            ppu->dma_write(i, ram[static_cast<size_t>(offs) + i]);
-        }
+        std::size_t offs = val << 8;
+        log(log_level::debug, "\toam copy from [${:04x}-${:04x}]", offs, offs + 0xFF);
+        ppu->dma_copy(std::span<uint8_t, 0x100>(ram.data() + offs, 0x100));
     } else if (adr == 0x415) {
         apu->write_status(adr);
     } else if (adr == 0x4016) {
@@ -105,7 +102,7 @@ uint8_t memory_bus::read(uint16_t adr) {
             logf(log_level::error, "Unsupported ppu read\n");
             return 0;
         }
-    // MISC
+        // MISC
     } else if (adr == 0x4015) {
         return apu->read_status();
     } else if (adr == 0x4016) {
@@ -115,8 +112,7 @@ uint8_t memory_bus::read(uint16_t adr) {
              "\t Reading from unimplemented controller: %#6x\n", adr);
         // Assume 0 is ok to return.
         return 0;
-    }
-    else if (adr >= 0x8000) {
+    } else if (adr >= 0x8000) {
         // Remove base address
         uint16_t mod_adr = adr - 0x8000;
         return rom[mod_adr];
