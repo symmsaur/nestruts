@@ -10,8 +10,8 @@ constexpr uint8_t inhibit_irq_bit = 1 << 6;
 
 void audio_processing_unit::pulse::play(std::span<std::int16_t> audio_buffer,
                                         int sample_rate_hz) {
-    // FIXME: Doesn't work for some reaons, comment out to get some sound :-)
-    // if (!enabled) return;
+    // FIXME: Doesn't work for some reasons, comment out to get some sound :-)
+     if (!enabled) return;
     // Multiply set volume by arbitrary multiplier
     int volume = volume_envelope() * 256;
     int period_ticks = ((0x7 & reg_length_timer) << 8) + reg_timer_low + 1;
