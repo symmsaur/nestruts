@@ -19,6 +19,7 @@ lib = library(
         'nestruts/instruction_store.cpp',
         'nestruts/mem.cpp',
         'nestruts/ppu.cpp',
+        'nestruts/rom.cpp',
     ],
     include_directories : [
         'nestruts',

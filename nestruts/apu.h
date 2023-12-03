@@ -17,7 +17,7 @@ class audio_processing_unit final {
             load_length_counter();
         }
         void play(std::span<std::int16_t> audio_buffer, int sample_rate_hz);
-            void enable(bool val) { enabled = val; }
+        void enable(bool val) { enabled = val; }
 
       private:
         // duty
