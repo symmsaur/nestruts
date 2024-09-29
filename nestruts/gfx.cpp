@@ -27,7 +27,7 @@ void graphics::draw() {}
 // Draw a fat pixel
 void graphics::draw_pixel(int nes_x, int nes_y, rgb color) {
     uint32_t color_argb = (color.red << 16) + (color.green << 8) + color.blue;
-    auto surf = SDL_GetWindowSurface(window);
+    auto const surf = SDL_GetWindowSurface(window);
     SDL_LockSurface(surf);
     int fatness = 4;
     if (current_log_level == log_level::debug)
@@ -36,6 +36,7 @@ void graphics::draw_pixel(int nes_x, int nes_y, rgb color) {
     auto const width = surf->pitch / sizeof(uint32_t);
     for (int x = nes_x * fatness; x < nes_x * fatness + fatness; x++) {
         for (int y = nes_y * fatness; y < nes_y * fatness + fatness; y++) {
+            if (x >= surf->w || y >= surf->h) continue;
             *(pixels + x + y * width) = color_argb;
         }
     }
